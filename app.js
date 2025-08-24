@@ -31,17 +31,17 @@ class TechCorpPerformanceSystem {
     // Initialize organization structure and data
     initializeOrganizationData() {
         this.organization = {
-            name: "TechCorp Industries",
-            totalEmployees: 63,
+            name: "منظمتي",
+            totalEmployees: 100,
             departments: [
-                {id: "eng", name: "Engineering", manager: "David Brown", employees: 15, avgPerformance: 4.2},
-                {id: "mkt", name: "Marketing", manager: "Jennifer Davis", employees: 12, avgPerformance: 4.0},
-                {id: "sales", name: "Sales", manager: "Michael Johnson", employees: 18, avgPerformance: 4.1},
-                {id: "design", name: "Design", manager: "Robert Wilson", employees: 8, avgPerformance: 4.3},
-                {id: "analytics", name: "Data Analytics", manager: "Sarah Chen", employees: 10, avgPerformance: 3.9}
+                {id: "it", name: "قسم تكنولوجيا المعلومات", manager: "أحمد علي", employees: 30, avgPerformance: 4.5},
+                {id: "hr", name: "قسم الموارد البشرية", manager: "منى حسين", employees: 15, avgPerformance: 4.2},
+                {id: "sales", name: "قسم المبيعات", manager: "محمود سيد", employees: 25, avgPerformance: 4.8},
+                {id: "marketing", name: "قسم التسويق", manager: "فاطمة إبراهيم", employees: 20, avgPerformance: 4.3},
+                {id: "finance", name: "قسم المالية", manager: "خالد جمال", employees: 10, avgPerformance: 4.0}
             ],
             evaluationPeriod: "Monthly",
-            systemLaunch: "2025-09-01"
+            systemLaunch: "2025-08-25"
         };
     }
     
@@ -49,48 +49,48 @@ class TechCorpPerformanceSystem {
     initializeEmployeeData() {
         this.employees = [
             {
-                id: "emp001", name: "John Smith", position: "Senior Software Developer", 
-                department: "Engineering", manager: "mgr001", email: "john.smith@techcorp.com",
-                hire_date: "2023-03-15", performance_avg: 4.2, status: "active",
-                skills: ["JavaScript", "Python", "React", "Node.js"],
-                phone: "+1-555-0101", location: "New York, NY"
+                id: "emp001", name: "علي محمد", position: "مهندس برمجيات", 
+                department: "قسم تكنولوجيا المعلومات", manager: "mgr001", email: "ali.mohamed@mycompany.com",
+                hire_date: "2024-01-10", performance_avg: 4.5, status: "active",
+                skills: ["Python", "Django", "JavaScript", "React"],
+                phone: "+20-100-1234567", location: "القاهرة"
             },
             {
-                id: "emp002", name: "Sarah Johnson", position: "Marketing Specialist",
-                department: "Marketing", manager: "mgr002", email: "sarah.johnson@techcorp.com",
-                hire_date: "2022-07-20", performance_avg: 4.0, status: "active",
-                skills: ["Digital Marketing", "Content Strategy", "Analytics"],
-                phone: "+1-555-0102", location: "San Francisco, CA"
+                id: "emp002", name: "سارة حسن", position: "أخصائية موارد بشرية",
+                department: "قسم الموارد البشرية", manager: "mgr002", email: "sara.hassan@mycompany.com",
+                hire_date: "2023-05-20", performance_avg: 4.2, status: "active",
+                skills: ["Recruitment", "Onboarding", "Employee Relations"],
+                phone: "+20-100-2345678", location: "القاهرة"
             },
             {
-                id: "emp003", name: "Mike Chen", position: "Data Analyst",
-                department: "Analytics", manager: "mgr005", email: "mike.chen@techcorp.com",
-                hire_date: "2023-01-10", performance_avg: 3.9, status: "active",
-                skills: ["SQL", "Python", "Tableau", "Machine Learning"],
-                phone: "+1-555-0103", location: "Seattle, WA"
+                id: "emp003", name: "فادي سعيد", position: "مسؤول مبيعات",
+                department: "قسم المبيعات", manager: "mgr003", email: "fady.saeed@mycompany.com",
+                hire_date: "2024-03-01", performance_avg: 4.8, status: "active",
+                skills: ["Salesforce", "CRM", "Negotiation"],
+                phone: "+20-100-3456789", location: "الإسكندرية"
             },
             {
-                id: "emp004", name: "Lisa Williams", position: "UX Designer",
-                department: "Design", manager: "mgr004", email: "lisa.williams@techcorp.com",
-                hire_date: "2022-11-05", performance_avg: 4.3, status: "active",
-                skills: ["Figma", "User Research", "Prototyping", "Design Systems"],
-                phone: "+1-555-0104", location: "Austin, TX"
+                id: "emp004", name: "ليلى محمود", position: "منسقة تسويق",
+                department: "قسم التسويق", manager: "mgr004", email: "laila.mahmoud@mycompany.com",
+                hire_date: "2023-11-15", performance_avg: 4.3, status: "active",
+                skills: ["Digital Marketing", "Content Creation", "SEO"],
+                phone: "+20-100-4567890", location: "الجيزة"
             },
             {
-                id: "emp005", name: "James Rodriguez", position: "Sales Representative",
-                department: "Sales", manager: "mgr003", email: "james.rodriguez@techcorp.com",
-                hire_date: "2023-05-12", performance_avg: 3.8, status: "active",
-                skills: ["B2B Sales", "CRM", "Lead Generation", "Negotiation"],
-                phone: "+1-555-0105", location: "Chicago, IL"
+                id: "emp005", name: "أحمد شوقي", position: "محلل مالي",
+                department: "قسم المالية", manager: "mgr005", email: "ahmed.shawky@mycompany.com",
+                hire_date: "2024-02-28", performance_avg: 4.0, status: "active",
+                skills: ["Financial Analysis", "Budgeting", "Excel"],
+                phone: "+20-100-5678901", location: "القاهرة"
             }
         ];
         
         this.managers = [
-            {id: "mgr001", name: "David Brown", department: "Engineering", role: "Engineering Manager"},
-            {id: "mgr002", name: "Jennifer Davis", department: "Marketing", role: "Marketing Director"},
-            {id: "mgr003", name: "Michael Johnson", department: "Sales", role: "Sales Manager"},
-            {id: "mgr004", name: "Robert Wilson", department: "Design", role: "Design Lead"},
-            {id: "mgr005", name: "Sarah Chen", department: "Analytics", role: "Analytics Manager"}
+            {id: "mgr001", name: "أحمد علي", department: "قسم تكنولوجيا المعلومات", role: "مدير تكنولوجيا المعلومات"},
+            {id: "mgr002", name: "منى حسين", department: "قسم الموارد البشرية", role: "مديرة الموارد البشرية"},
+            {id: "mgr003", name: "محمود سيد", department: "قسم المبيعات", role: "مدير المبيعات"},
+            {id: "mgr004", name: "فاطمة إبراهيم", department: "قسم التسويق", role: "مديرة التسويق"},
+            {id: "mgr005", name: "خالد جمال", department: "قسم المالية", role: "مدير المالية"}
         ];
     }
     
@@ -98,57 +98,64 @@ class TechCorpPerformanceSystem {
     initializeTaskData() {
         this.tasks = [
             {
-                id: "tsk001", title: "Complete API documentation", 
-                description: "Update and finalize API documentation for v2.0 release",
+                id: "tsk001", title: "تطوير واجهة المستخدم", 
+                description: "إعادة تصميم واجهة المستخدم لقسم المهام",
                 importance: "high", assigned_to: "emp001", assigned_by: "mgr001",
-                deadline: "2025-08-25T17:00", status: "completed", 
-                completion_time: "2025-08-24T16:30", quality_rating: 5,
-                tags: ["documentation", "api", "release"],
-                time_spent: 8, estimated_time: 6,
-                feedback: "Excellent attention to detail and clear explanations."
+                deadline: "2025-08-30T17:00", status: "in_progress", 
+                tags: ["front-end", "ui", "redesign"],
+                estimated_time: 15
             },
             {
-                id: "tsk002", title: "Prepare quarterly report",
-                description: "Compile Q3 performance metrics and insights",
-                importance: "critical", assigned_to: "emp003", assigned_by: "mgr005",
-                deadline: "2025-08-24T15:00", status: "completed",
-                completion_time: "2025-08-24T14:30", quality_rating: 4,
-                tags: ["report", "analytics", "quarterly"],
-                time_spent: 12, estimated_time: 10
-            },
-            {
-                id: "tsk003", title: "Code review for payment module",
-                description: "Review pull request #234 for payment integration",
-                importance: "medium", assigned_to: "emp001", assigned_by: "mgr001",
-                deadline: "2025-08-26T12:00", status: "in_progress",
-                tags: ["code-review", "payment", "security"],
-                estimated_time: 4
-            },
-            {
-                id: "tsk004", title: "Design mockup review",
-                description: "Review and update homepage mockups based on feedback",
-                importance: "medium", assigned_to: "emp004", assigned_by: "mgr004",
-                deadline: "2025-08-26T16:00", status: "in_progress",
-                tags: ["design", "mockup", "homepage"],
-                estimated_time: 6
-            },
-            {
-                id: "tsk005", title: "Marketing campaign analysis",
-                description: "Analyze performance of Q3 marketing campaigns",
-                importance: "high", assigned_to: "emp002", assigned_by: "mgr002",
-                deadline: "2025-08-27T14:00", status: "pending",
-                tags: ["marketing", "analysis", "campaign"],
+                id: "tsk002", title: "إعداد تقارير الأداء الشهرية",
+                description: "تجميع وتحليل بيانات الأداء لجميع الموظفين",
+                importance: "critical", assigned_to: "emp002", assigned_by: "mgr002",
+                deadline: "2025-08-25T15:00", status: "pending",
+                tags: ["reports", "hr", "monthly"],
                 estimated_time: 8
+            },
+            {
+                id: "tsk003", title: "متابعة العملاء المحتملين",
+                description: "التواصل مع قائمة العملاء الجدد لمتابعة فرص المبيعات",
+                importance: "medium", assigned_to: "emp003", assigned_by: "mgr003",
+                deadline: "2025-08-28T12:00", status: "in_progress",
+                tags: ["sales", "crm", "leads"],
+                estimated_time: 10
+            },
+            {
+                id: "tsk004", title: "كتابة محتوى مدونة جديد",
+                description: "كتابة مقالين عن أفضل ممارسات التسويق الرقمي",
+                importance: "medium", assigned_to: "emp004", assigned_by: "mgr004",
+                deadline: "2025-08-27T16:00", status: "pending",
+                tags: ["content", "blog", "marketing"],
+                estimated_time: 8
+            },
+            {
+                id: "tsk005", title: "تحليل ميزانية الربع الثالث",
+                description: "مراجعة الميزانية وتحديد الانحرافات الرئيسية",
+                importance: "high", assigned_to: "emp005", assigned_by: "mgr005",
+                deadline: "2025-09-05T14:00", status: "pending",
+                tags: ["finance", "budget", "analysis"],
+                estimated_time: 12
+            },
+            {
+                id: "tsk006", title: "حل مشكلة الأمان",
+                description: "معالجة الثغرة الأمنية المكتشفة في النظام",
+                importance: "critical", assigned_to: "emp001", assigned_by: "mgr001",
+                deadline: "2025-08-25T10:00", status: "completed", 
+                completion_time: "2025-08-24T18:00", quality_rating: 5,
+                tags: ["security", "bug-fix"],
+                time_spent: 10, estimated_time: 8,
+                feedback: "حل ممتاز وسريع للمشكلة، عمل احترافي."
             }
         ];
         
         // Importance level definitions
         this.importanceLevels = {
-            critical: {weight: 3.0, description: "Mission-critical tasks", color: "var(--color-error)"},
-            high: {weight: 2.5, description: "Important team goals", color: "var(--color-warning)"},
-            medium: {weight: 2.0, description: "Standard operations", color: "var(--color-info)"},
-            low: {weight: 1.5, description: "Routine tasks", color: "var(--color-success)"},
-            minimal: {weight: 1.0, description: "Administrative tasks", color: "var(--color-text-secondary)"}
+            critical: {weight: 3.0, description: "مهام حرجة", color: "var(--color-error)"},
+            high: {weight: 2.5, description: "أهداف هامة", color: "var(--color-warning)"},
+            medium: {weight: 2.0, description: "عمليات عادية", color: "var(--color-info)"},
+            low: {weight: 1.5, description: "مهام روتينية", color: "var(--color-success)"},
+            minimal: {weight: 1.0, description: "مهام إدارية", color: "var(--color-text-secondary)"}
         };
     }
     
@@ -158,45 +165,45 @@ class TechCorpPerformanceSystem {
             taskPerformanceWeight: 50,
             attitudeEvaluationWeight: 50,
             attitudeCategories: {
-                work_engagement: {weight: 20, questions: 4, description: "Enthusiasm and dedication to work"},
-                team_collaboration: {weight: 25, questions: 5, description: "Working effectively with team members"},
-                communication: {weight: 20, questions: 4, description: "Clear and effective communication"},
-                reliability: {weight: 15, questions: 4, description: "Consistency and dependability"},
-                adaptability: {weight: 20, questions: 4, description: "Flexibility and openness to change"}
+                work_engagement: {weight: 20, questions: 4, description: "الالتزام والجهد"},
+                team_collaboration: {weight: 25, questions: 5, description: "العمل الجماعي"},
+                communication: {weight: 20, questions: 4, description: "التواصل"},
+                reliability: {weight: 15, questions: 4, description: "الاعتمادية"},
+                adaptability: {weight: 20, questions: 4, description: "المرونة"}
             }
         };
         
         this.evaluationQuestions = {
             work_engagement: [
-                "Shows enthusiasm for assigned tasks and projects",
-                "Takes initiative and goes beyond basic requirements",
-                "Demonstrates passion for their role and responsibilities",
-                "Maintains high energy and motivation levels"
+                "يُظهر الحماس للمهام والمشاريع",
+                "يأخذ المبادرة ويتجاوز المتطلبات الأساسية",
+                "يظهر شغفًا بمسؤولياته",
+                "يُحافظ على مستويات عالية من الطاقة والتحفيز"
             ],
             team_collaboration: [
-                "Actively participates in team meetings and discussions",
-                "Offers help and support to colleagues when needed",
-                "Shares knowledge and expertise with team members",
-                "Works well in cross-functional team environments",
-                "Contributes to a positive team culture"
+                "يشارك بفعالية في اجتماعات الفريق",
+                "يقدم المساعدة والدعم للزملاء عند الحاجة",
+                "يشارك المعرفة والخبرة مع أعضاء الفريق",
+                "يعمل بشكل جيد في بيئات الفرق المتعددة",
+                "يُساهم في ثقافة فريق إيجابية"
             ],
             communication: [
-                "Communicates clearly and concisely in meetings",
-                "Provides timely updates on project progress",
-                "Listens actively and responds appropriately",
-                "Presents ideas and solutions effectively"
+                "يتواصل بوضوح وإيجاز في الاجتماعات",
+                "يُقدم تحديثات في الوقت المناسب حول تقدم المشروع",
+                "يستمع بانتباه ويستجيب بشكل مناسب",
+                "يُقدم الأفكار والحلول بفعالية"
             ],
             reliability: [
-                "Consistently meets deadlines and commitments",
-                "Follows through on promises and agreements",
-                "Maintains consistent quality in work output",
-                "Can be depended upon during challenging situations"
+                "يلتزم بالمواعيد النهائية والتعهدات",
+                "يتابع الوعود والاتفاقيات",
+                "يحافظ على جودة متسقة في العمل",
+                "يمكن الاعتماد عليه في المواقف الصعبة"
             ],
             adaptability: [
-                "Embraces change and new challenges positively",
-                "Learns new skills and technologies quickly",
-                "Adjusts approach when circumstances change",
-                "Remains calm and productive under pressure"
+                "يتقبل التغيير والتحديات الجديدة بإيجابية",
+                "يتعلم مهارات وتقنيات جديدة بسرعة",
+                "يعدّل نهجه عندما تتغير الظروف",
+                "يظل هادئًا ومنتجًا تحت الضغط"
             ]
         };
         
@@ -205,18 +212,18 @@ class TechCorpPerformanceSystem {
             emp001: {
                 current_month: {
                     work_engagement: 4.5,
-                    team_collaboration: 4.2,
+                    team_collaboration: 4.6,
                     communication: 4.4,
-                    reliability: 4.1,
-                    adaptability: 4.3,
-                    overall_attitude: 4.3,
-                    task_performance: 4.1,
-                    final_score: 4.2
+                    reliability: 4.7,
+                    adaptability: 4.8,
+                    overall_attitude: 4.6,
+                    task_performance: 4.5,
+                    final_score: 4.55
                 },
                 historical: [
-                    {month: "2025-07", final_score: 3.9},
-                    {month: "2025-06", final_score: 4.0},
-                    {month: "2025-05", final_score: 4.1}
+                    {month: "2025-07", final_score: 4.3},
+                    {month: "2025-06", final_score: 4.4},
+                    {month: "2025-05", final_score: 4.5}
                 ]
             }
         };
@@ -227,51 +234,51 @@ class TechCorpPerformanceSystem {
         this.notifications = [
             {
                 id: 1, type: "deadline_alert", icon: "⚠️", urgency: "high",
-                message: "Task 'Marketing campaign analysis' is due tomorrow at 2:00 PM",
+                message: "مهمة 'إعداد تقارير الأداء الشهرية' موعدها النهائي غدًا",
                 timestamp: new Date(Date.now() - 30 * 60 * 1000), read: false,
-                employee: "emp002", related_task: "tsk005"
+                employee: "emp002", related_task: "tsk002"
             },
             {
                 id: 2, type: "celebration", icon: "🎉", urgency: "low",
-                message: "Congratulations! You've earned the 'Quality Focused' badge for maintaining 4.5+ quality ratings",
+                message: "تهانينا! لقد حصلت على وسام 'المركز الأول للمبيعات' لشهر أغسطس",
                 timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), read: false,
-                employee: "emp001", related_achievement: "quality_focused"
+                employee: "emp003", related_achievement: "sales_leader"
             },
             {
                 id: 3, type: "feedback_request", icon: "💬", urgency: "high",
-                message: "Please provide feedback for completed task: Complete API documentation",
+                message: "الرجاء تقديم ملاحظاتك حول المهمة المكتملة: حل مشكلة الأمان",
                 timestamp: new Date(Date.now() - 15 * 60 * 1000), read: false,
-                employee: "mgr001", related_task: "tsk001"
+                employee: "mgr001", related_task: "tsk006"
             },
             {
                 id: 4, type: "suggestion", icon: "💡", urgency: "medium",
-                message: "Try time-blocking your calendar for focused work sessions to improve efficiency",
+                message: "اقتراح: استخدم تقنية Time-blocking لزيادة التركيز في مهام البرمجة",
                 timestamp: new Date(Date.now() - 45 * 60 * 1000), read: false,
                 employee: "emp001"
             },
             {
                 id: 5, type: "evaluation_due", icon: "📋", urgency: "medium",
-                message: "Monthly attitude evaluation is due for John Smith by August 31st",
+                message: "تقييم الأداء الشهري للموظف علي محمد مستحق بحلول 31 أغسطس",
                 timestamp: new Date(Date.now() - 60 * 60 * 1000), read: false,
                 employee: "mgr001", related_employee: "emp001"
             },
             {
                 id: 6, type: "milestone", icon: "🏆", urgency: "low",
-                message: "Team achieved 95% task completion rate this month!",
+                message: "فريق المبيعات حقق 120% من الهدف الشهري!",
                 timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000), read: false,
-                employee: "mgr001"
+                employee: "mgr003"
             },
             {
                 id: 7, type: "system_update", icon: "🔄", urgency: "low",
-                message: "System will be updated tonight at 11:00 PM EST for performance improvements",
+                message: "سيتم تحديث النظام اليوم لتحسين الأداء",
                 timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000), read: false,
                 employee: "all"
             },
             {
                 id: 8, type: "training", icon: "🎓", urgency: "medium",
-                message: "New learning resource available: 'Advanced JavaScript Patterns'",
+                message: "مصدر تعليمي جديد متاح: 'أدوات تحليل البيانات المتقدمة'",
                 timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000), read: false,
-                employee: "emp001"
+                employee: "emp005"
             }
         ];
         
@@ -289,38 +296,38 @@ class TechCorpPerformanceSystem {
     initializeAchievementSystem() {
         this.badgeDefinitions = {
             timeliness: [
-                {name: "On-Time Starter", requirement: 5, icon: "⏰", description: "Complete 5 consecutive tasks on time", points: 50},
-                {name: "Deadline Master", requirement: 20, icon: "🎯", description: "Complete 20 consecutive tasks on time", points: 200},
-                {name: "Time Champion", requirement: 50, icon: "🏆", description: "Complete 50 consecutive tasks on time", points: 500}
+                {name: "بداية في الوقت المحدد", requirement: 5, icon: "⏰", description: "إكمال 5 مهام متتالية في الوقت المحدد", points: 50},
+                {name: "محترف المواعيد", requirement: 20, icon: "🎯", description: "إكمال 20 مهمة متتالية في الوقت المحدد", points: 200},
+                {name: "بطل الوقت", requirement: 50, icon: "🏆", description: "إكمال 50 مهمة متتالية في الوقت المحدد", points: 500}
             ],
             quality: [
-                {name: "Quality Focused", requirement: 4.5, icon: "⭐", description: "Maintain 4.5+ quality rating for 1 month", points: 100},
-                {name: "Excellence Expert", requirement: 4.8, icon: "🌟", description: "Maintain 4.8+ quality rating for 2 months", points: 300},
-                {name: "Perfection Pro", requirement: 5.0, icon: "💎", description: "Achieve 10 consecutive 5.0 quality ratings", points: 500}
+                {name: "مركز الجودة", requirement: 4.5, icon: "⭐", description: "الحفاظ على تقييم جودة 4.5+ لمدة شهر", points: 100},
+                {name: "خبير التميز", requirement: 4.8, icon: "🌟", description: "الحفاظ على تقييم جودة 4.8+ لمدة شهرين", points: 300},
+                {name: "مبدع الكمال", requirement: 5.0, icon: "💎", description: "تحقيق 10 تقييمات جودة 5.0 متتالية", points: 500}
             ],
             collaboration: [
-                {name: "Team Player", requirement: 5, icon: "🤝", description: "Help 5 colleagues with their tasks", points: 75},
-                {name: "Collaboration Champion", requirement: 3, icon: "👥", description: "Top collaboration score for 3 months", points: 250},
-                {name: "Mentor Master", requirement: 3, icon: "🎓", description: "Successfully mentor 3 team members", points: 400}
+                {name: "اللاعب الجماعي", requirement: 5, icon: "🤝", description: "مساعدة 5 زملاء في مهامهم", points: 75},
+                {name: "بطل التعاون", requirement: 3, icon: "👥", description: "أعلى نقاط تعاون لمدة 3 أشهر", points: 250},
+                {name: "المرشد المتميز", requirement: 3, icon: "🎓", description: "توجيه 3 أعضاء في الفريق بنجاح", points: 400}
             ],
             improvement: [
-                {name: "Growth Mindset", requirement: 0.5, icon: "📈", description: "Improve performance by 0.5 points", points: 100},
-                {name: "Comeback Kid", requirement: 1.0, icon: "🔄", description: "Recover from low performance period", points: 200},
-                {name: "Consistency King", requirement: 90, icon: "👑", description: "90% on-time completion for 6 months", points: 300}
+                {name: "عقلية النمو", requirement: 0.5, icon: "📈", description: "تحسين الأداء بمقدار 0.5 نقطة", points: 100},
+                {name: "عودة قوية", requirement: 1.0, icon: "🔄", description: "التعافي من فترة أداء منخفض", points: 200},
+                {name: "ملك الاستمرارية", requirement: 90, icon: "👑", description: "90% إكمال في الوقت المحدد لمدة 6 أشهر", points: 300}
             ]
         };
         
         this.achievements = {
             emp001: {
                 earned: [
-                    {badge: "On-Time Starter", earned_date: "2025-07-15", category: "timeliness"},
-                    {badge: "Quality Focused", earned_date: "2025-08-01", category: "quality"},
-                    {badge: "Team Player", earned_date: "2025-07-28", category: "collaboration"}
+                    {badge: "بداية في الوقت المحدد", earned_date: "2025-07-15", category: "timeliness"},
+                    {badge: "مركز الجودة", earned_date: "2025-08-01", category: "quality"},
+                    {badge: "اللاعب الجماعي", earned_date: "2025-07-28", category: "collaboration"}
                 ],
                 progress: {
-                    "Deadline Master": 12,
-                    "Excellence Expert": 1.2,
-                    "Growth Mindset": 0.3
+                    "محترف المواعيد": 12,
+                    "خبير التميز": 1.2,
+                    "عقلية النمو": 0.3
                 },
                 streaks: {
                     onTime: 12,
@@ -331,11 +338,11 @@ class TechCorpPerformanceSystem {
             },
             emp002: {
                 earned: [
-                    {badge: "Team Player", earned_date: "2025-07-20", category: "collaboration"}
+                    {badge: "اللاعب الجماعي", earned_date: "2025-07-20", category: "collaboration"}
                 ],
                 progress: {
-                    "On-Time Starter": 3,
-                    "Quality Focused": 4.2
+                    "بداية في الوقت المحدد": 3,
+                    "مركز الجودة": 4.2
                 },
                 streaks: {
                     onTime: 3,
@@ -345,12 +352,12 @@ class TechCorpPerformanceSystem {
             },
             emp003: {
                 earned: [
-                    {badge: "Quality Focused", earned_date: "2025-07-10", category: "quality"},
-                    {badge: "Growth Mindset", earned_date: "2025-08-05", category: "improvement"}
+                    {badge: "مركز الجودة", earned_date: "2025-07-10", category: "quality"},
+                    {badge: "عقلية النمو", earned_date: "2025-08-05", category: "improvement"}
                 ],
                 progress: {
-                    "Deadline Master": 8,
-                    "Excellence Expert": 2.1
+                    "محترف المواعيد": 8,
+                    "خبير التميز": 2.1
                 },
                 streaks: {
                     onTime: 8,
@@ -360,14 +367,14 @@ class TechCorpPerformanceSystem {
             },
             emp004: {
                 earned: [
-                    {badge: "On-Time Starter", earned_date: "2025-06-15", category: "timeliness"},
-                    {badge: "Quality Focused", earned_date: "2025-07-01", category: "quality"},
-                    {badge: "Team Player", earned_date: "2025-07-25", category: "collaboration"},
-                    {badge: "Excellence Expert", earned_date: "2025-08-10", category: "quality"}
+                    {badge: "بداية في الوقت المحدد", earned_date: "2025-06-15", category: "timeliness"},
+                    {badge: "مركز الجودة", earned_date: "2025-07-01", category: "quality"},
+                    {badge: "اللاعب الجماعي", earned_date: "2025-07-25", category: "collaboration"},
+                    {badge: "خبير التميز", earned_date: "2025-08-10", category: "quality"}
                 ],
                 progress: {
-                    "Deadline Master": 18,
-                    "Perfection Pro": 7
+                    "محترف المواعيد": 18,
+                    "مبدع الكمال": 7
                 },
                 streaks: {
                     onTime: 18,
@@ -384,67 +391,67 @@ class TechCorpPerformanceSystem {
         this.reportTemplates = {
             manager: {
                 "individual-trends": {
-                    title: "Individual Performance Trends",
-                    description: "Track individual employee performance over time",
-                    category: "Team Performance Analytics",
+                    title: "اتجاهات الأداء الفردي",
+                    description: "تتبع أداء الموظفين الفردي بمرور الوقت",
+                    category: "تحليلات أداء الفريق",
                     data_points: ["performance_scores", "task_completion", "quality_ratings"],
                     chart_type: "line"
                 },
                 "productivity-analytics": {
-                    title: "Productivity Analytics", 
-                    description: "Analyze task completion rates and efficiency",
-                    category: "Team Performance Analytics",
+                    title: "تحليلات الإنتاجية", 
+                    description: "تحليل معدلات إكمال المهام والفعالية",
+                    category: "تحليلات أداء الفريق",
                     data_points: ["completion_rate", "time_efficiency", "workload_distribution"],
                     chart_type: "bar"
                 },
                 "quality-metrics": {
-                    title: "Quality Metrics",
-                    description: "Review quality ratings and feedback patterns", 
-                    category: "Team Performance Analytics",
+                    title: "مقاييس الجودة",
+                    description: "مراجعة تقييمات الجودة وأنماط الملاحظات", 
+                    category: "تحليلات أداء الفريق",
                     data_points: ["quality_scores", "feedback_sentiment", "improvement_trends"],
                     chart_type: "radar"
                 },
                 "attitude-trends": {
-                    title: "Attitude Evaluation Trends",
-                    description: "Monthly attitude evaluation analysis",
-                    category: "Behavioral Analytics", 
+                    title: "اتجاهات تقييم السلوك",
+                    description: "تحليل التقييم الشهري للسلوك",
+                    category: "التحليلات السلوكية", 
                     data_points: ["attitude_scores", "category_breakdown", "monthly_trends"],
                     chart_type: "stacked_bar"
                 },
                 "workload-balance": {
-                    title: "Workload Balance Analysis",
-                    description: "Task distribution and capacity analysis",
-                    category: "Development & Management",
+                    title: "تحليل توازن عبء العمل",
+                    description: "توزيع المهام وتحليل القدرات",
+                    category: "التطوير والإدارة",
                     data_points: ["task_distribution", "workload_metrics", "capacity_utilization"],
                     chart_type: "pie"
                 }
             },
             admin: {
                 "company-metrics": {
-                    title: "Company Performance Metrics", 
-                    description: "Organization-wide performance overview",
-                    category: "Organizational Performance",
+                    title: "مقاييس أداء الشركة", 
+                    description: "نظرة عامة على الأداء على مستوى المنظمة",
+                    category: "أداء المنظمة",
                     data_points: ["overall_performance", "department_averages", "growth_trends"],
                     chart_type: "dashboard"
                 },
                 "department-comparison": {
-                    title: "Department Performance Comparison",
-                    description: "Cross-department performance analysis", 
-                    category: "Organizational Performance",
+                    title: "مقارنة أداء الأقسام",
+                    description: "تحليل أداء الأقسام المختلفة", 
+                    category: "أداء المنظمة",
                     data_points: ["department_scores", "relative_performance", "benchmarks"],
                     chart_type: "comparison_bar"
                 },
                 "predictive-analytics": {
-                    title: "Predictive Performance Analytics",
-                    description: "Performance forecasting and trend prediction",
-                    category: "System Analytics", 
+                    title: "التحليلات التنبؤية للأداء",
+                    description: "توقع الأداء وتنبؤ بالاتجاهات",
+                    category: "تحليلات النظام", 
                     data_points: ["forecast_data", "trend_analysis", "risk_indicators"],
                     chart_type: "forecast_line"
                 },
                 "roi-analysis": {
-                    title: "System ROI Analysis",
-                    description: "Return on investment from performance management",
-                    category: "ROI & Impact Analysis",
+                    title: "تحليل العائد على الاستثمار",
+                    description: "العائد على الاستثمار من مبادرات إدارة الأداء",
+                    category: "تحليل العائد على الاستثمار والأثر",
                     data_points: ["cost_savings", "productivity_gains", "retention_improvements"],
                     chart_type: "financial"
                 }
@@ -461,23 +468,23 @@ class TechCorpPerformanceSystem {
     // Initialize feedback and communication system
     initializeFeedbackSystem() {
         this.feedbackTemplates = {
-            positive: "What went particularly well with this task? The approach was effective and the results exceeded expectations.",
-            improvement: "What could be improved for next time? Consider focusing on documentation and testing coverage.",
-            challenges: "Any specific challenges encountered? Time management during complex requirements gathering.",
-            suggestions: "Suggestions for future similar tasks? Break down large tasks into smaller, manageable chunks."
+            positive: "ما الذي سار بشكل جيد في هذه المهمة؟ النهج كان فعالاً والنتائج تجاوزت التوقعات.",
+            improvement: "ما الذي يمكن تحسينه في المرة القادمة؟ فكر في التركيز على التوثيق وتغطية الاختبارات.",
+            challenges: "هل واجهت أي تحديات معينة؟ إدارة الوقت خلال تجميع المتطلبات المعقدة.",
+            suggestions: "اقتراحات للمهام المماثلة في المستقبل؟ قسّم المهام الكبيرة إلى أجزاء أصغر يمكن إدارتها."
         };
         
         this.feedbackConversations = {
-            tsk001: [
+            tsk006: [
                 {
-                    id: 1, sender: "manager", sender_name: "David Brown",
-                    message: "Excellent attention to detail and clear explanations. The examples you included will be very helpful for the development team.",
+                    id: 1, sender: "manager", sender_name: "أحمد علي",
+                    message: "حل ممتاز وسريع للمشكلة. العمل الاحترافي الذي قمت به سيساعد في منع المشاكل المستقبلية.",
                     timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-                    quality_rating: 5, task_title: "Complete API documentation"
+                    quality_rating: 5, task_title: "حل مشكلة الأمان"
                 },
                 {
-                    id: 2, sender: "employee", sender_name: "John Smith",
-                    message: "Thank you for the feedback! I spent extra time on the examples because I know how much they help. Any suggestions for making future documentation even better?",
+                    id: 2, sender: "employee", sender_name: "علي محمد",
+                    message: "شكراً على ملاحظاتك! لقد ركزت على إيجاد حل جذري للمشكلة.",
                     timestamp: new Date(Date.now() - 60 * 60 * 1000)
                 }
             ]
@@ -486,15 +493,15 @@ class TechCorpPerformanceSystem {
         this.developmentPlans = {
             emp001: [
                 {
-                    goal: "Improve time estimation accuracy",
-                    description: "Work on better estimating task completion times",
+                    goal: "تحسين دقة تقدير الوقت",
+                    description: "العمل على تقدير أفضل لأوقات إنجاز المهام",
                     target_date: "2025-12-31",
                     progress: 60,
                     status: "active"
                 },
                 {
-                    goal: "Leadership skills development", 
-                    description: "Take on mentoring responsibilities for junior developers",
+                    goal: "تطوير المهارات القيادية", 
+                    description: "تولي مسؤوليات توجيه المطورين الجدد",
                     target_date: "2026-03-31",
                     progress: 25,
                     status: "active"
@@ -505,18 +512,18 @@ class TechCorpPerformanceSystem {
         this.learningResources = {
             emp001: [
                 {
-                    title: "Advanced JavaScript Patterns",
-                    type: "course",
+                    title: "أنماط JavaScript المتقدمة",
+                    type: "دورة تدريبية",
                     provider: "TechLearn",
-                    status: "available",
-                    relevance: "high"
+                    status: "متاح",
+                    relevance: "عالي"
                 },
                 {
-                    title: "Project Management Fundamentals",
-                    type: "workshop", 
-                    provider: "Internal Training",
-                    status: "enrolled",
-                    relevance: "medium"
+                    title: "أساسيات إدارة المشاريع",
+                    type: "ورشة عمل", 
+                    provider: "تدريب داخلي",
+                    status: "مسجل",
+                    relevance: "متوسط"
                 }
             ]
         };
@@ -765,10 +772,10 @@ class TechCorpPerformanceSystem {
         
         if (viewType === 'manager') {
             const kpiData = [
-                {value: '4.2', label: 'Team Average', trend: '+0.3 vs last month', positive: true},
-                {value: '87%', label: 'Task Completion', trend: '+5% vs last month', positive: true},
-                {value: '23', label: 'Pending Reviews', trend: 'Due within 2 days', neutral: true},
-                {value: '95%', label: 'Employee Satisfaction', trend: '+2% vs last month', positive: true}
+                {value: '4.5', label: 'متوسط الفريق', trend: '+0.3 vs last month', positive: true},
+                {value: '90%', label: 'إنجاز المهام', trend: '+5% vs last month', positive: true},
+                {value: '15', label: 'تقييمات معلقة', trend: 'مستحقة خلال يومين', neutral: true},
+                {value: '95%', label: 'رضا الموظفين', trend: '+2% vs last month', positive: true}
             ];
             
             this.updateKPICards(kpiCards, kpiData);
@@ -777,10 +784,10 @@ class TechCorpPerformanceSystem {
             const achievements = this.achievements[this.currentEmployee] || {earned: [], streaks: {}};
             
             const kpiData = [
-                {value: employee?.performance_avg?.toFixed(1) || '4.0', label: 'Your Score', trend: '+0.3 this month', positive: true},
-                {value: '92%', label: 'On-time Rate', trend: '+5% improvement', positive: true},
-                {value: achievements.streaks.onTime || '0', label: 'Day Streak', trend: '🔥 Personal Best!', neutral: true},
-                {value: achievements.earned.length.toString(), label: 'Badges Earned', trend: `+${achievements.earned.filter(b => new Date(b.earned_date) > new Date(Date.now() - 30*24*60*60*1000)).length} this month`, positive: true}
+                {value: employee?.performance_avg?.toFixed(1) || '4.0', label: 'نقاطك', trend: '+0.3 this month', positive: true},
+                {value: '92%', label: 'معدل الإنجاز في الوقت المحدد', trend: '+5% improvement', positive: true},
+                {value: achievements.streaks.onTime || '0', label: 'سلسلة إنجاز', trend: '🔥 أفضل إنجاز شخصي!', neutral: true},
+                {value: achievements.earned.length.toString(), label: 'الأوسمة المكتسبة', trend: `+${achievements.earned.filter(b => new Date(b.earned_date) > new Date(Date.now() - 30*24*60*60*1000)).length} this month`, positive: true}
             ];
             
             this.updateKPICards(kpiCards, kpiData);
@@ -876,12 +883,12 @@ class TechCorpPerformanceSystem {
                 <div class="evaluation-item">
                     <div class="evaluation-employee">${employee.name}</div>
                     ${hasEvaluation ? 
-                        '<span class="status status--success">Completed</span>' :
-                        `<span class="status ${isOverdue ? 'status--error' : 'status--warning'}">${isOverdue ? 'Overdue' : 'Due Aug 31'}</span>`
+                        '<span class="status status--success">مكتمل</span>' :
+                        `<span class="status ${isOverdue ? 'status--error' : 'status--warning'}">${isOverdue ? 'متأخر' : 'مستحق في 31 أغسطس'}</span>`
                     }
                     <button class="btn btn--sm ${hasEvaluation ? 'btn--outline' : 'btn--primary'}" 
                             onclick="pms.${hasEvaluation ? 'viewEvaluation' : 'startEvaluation'}('${employee.id}')">
-                        ${hasEvaluation ? 'View Results' : 'Start Evaluation'}
+                        ${hasEvaluation ? 'عرض النتائج' : 'بدء التقييم'}
                     </button>
                 </div>
             `;
@@ -909,10 +916,10 @@ class TechCorpPerformanceSystem {
                         <div class="task-title">${task.title}</div>
                         <div class="task-description">${task.description}</div>
                         <div class="task-meta">
-                            <span class="importance-badge importance-${task.importance}">${task.importance.toUpperCase()}</span>
-                            <span class="deadline">Due: ${deadline.toLocaleDateString('en-US', {month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'})}</span>
+                            <span class="importance-badge importance-${task.importance}">${importanceLevel.description}</span>
+                            <span class="deadline">الموعد النهائي: ${deadline.toLocaleDateString('ar-EG', {month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'})}</span>
                             <span class="countdown ${isOverdue ? 'overdue' : ''}" data-deadline="${task.deadline}">
-                                ${isOverdue ? 'OVERDUE' : timeUntilDue}
+                                ${isOverdue ? 'متأخر' : timeUntilDue}
                             </span>
                             <div class="task-tags">
                                 ${task.tags?.map(tag => `<span class="task-tag">${tag}</span>`).join('') || ''}
@@ -920,8 +927,8 @@ class TechCorpPerformanceSystem {
                         </div>
                     </div>
                     <div class="task-actions">
-                        <button class="btn btn--sm btn--outline" onclick="pms.viewTaskDetails('${task.id}')">Details</button>
-                        <button class="btn btn--sm btn--primary" onclick="pms.completeTask('${task.id}')">Mark Complete</button>
+                        <button class="btn btn--sm btn--outline" onclick="pms.viewTaskDetails('${task.id}')">التفاصيل</button>
+                        <button class="btn btn--sm btn--primary" onclick="pms.completeTask('${task.id}')">تم الإنجاز</button>
                     </div>
                 </div>
             `;
@@ -953,7 +960,7 @@ class TechCorpPerformanceSystem {
                 
                 if (isEarned) {
                     statusClass = 'earned';
-                    progressText = `${badge.requirement}/${badge.requirement} completed`;
+                    progressText = `${badge.requirement}/${badge.requirement} مكتمل`;
                 } else if (progress > 0) {
                     statusClass = 'in-progress';
                     progressText = `${progress}/${badge.requirement}`;
@@ -1008,13 +1015,13 @@ class TechCorpPerformanceSystem {
                 <div class="suggestion-content">
                     <div class="suggestion-title">${suggestion.title}</div>
                     <div class="suggestion-text">${suggestion.description}</div>
-                    <div class="suggestion-impact">Impact: ${suggestion.impact}</div>
+                    <div class="suggestion-impact">الأثر: ${suggestion.impact}</div>
                     ${suggestion.status === 'completed' ? `
-                        <div class="suggestion-meta">Completed ${this.getTimeAgo(suggestion.completedDate)}</div>
+                        <div class="suggestion-meta">مكتمل منذ ${this.getTimeAgo(suggestion.completedDate)}</div>
                     ` : `
                         <div class="suggestion-actions">
-                            <button class="btn btn--sm btn--outline" onclick="pms.viewResource('${suggestion.resourceId}')">Learn More</button>
-                            <button class="btn btn--sm btn--primary" onclick="pms.completeSuggestion('${suggestion.id}')">Mark Complete</button>
+                            <button class="btn btn--sm btn--outline" onclick="pms.viewResource('${suggestion.resourceId}')">تعلم المزيد</button>
+                            <button class="btn btn--sm btn--primary" onclick="pms.completeSuggestion('${suggestion.id}')">تم الإنجاز</button>
                         </div>
                     `}
                 </div>
@@ -1036,7 +1043,7 @@ class TechCorpPerformanceSystem {
                     <div class="goal-progress">${goal.progress}%</div>
                 </div>
                 <div class="goal-description">${goal.description}</div>
-                <div class="goal-timeline">Target: ${new Date(goal.target_date).toLocaleDateString()}</div>
+                <div class="goal-timeline">الهدف: ${new Date(goal.target_date).toLocaleDateString()}</div>
                 <div class="progress-bar">
                     <div class="progress-fill" style="width: ${goal.progress}%"></div>
                 </div>
@@ -1057,7 +1064,7 @@ class TechCorpPerformanceSystem {
                         <div class="resource-status status--${resource.status === 'enrolled' ? 'info' : 'success'}">${resource.status}</div>
                     </div>
                     <button class="btn btn--sm btn--outline" onclick="pms.accessResource('${resource.title}')">
-                        ${resource.status === 'enrolled' ? 'Continue' : 'Start'}
+                        ${resource.status === 'مسجل' ? 'متابعة' : 'بدء'}
                     </button>
                 </div>
             `).join('');
@@ -1083,12 +1090,12 @@ class TechCorpPerformanceSystem {
             <div class="feedback-item">
                 <div class="feedback-header">
                     <span class="feedback-sender">${feedback.sender_name}</span>
-                    <span class="feedback-time">${this.getTimeAgo(feedback.timestamp)}</span>
+                    <span class="feedback-time">منذ ${this.getTimeAgo(feedback.timestamp)}</span>
                 </div>
                 <div class="feedback-content">
-                    ${feedback.task_title ? `<div class="feedback-task">Re: ${feedback.task_title}</div>` : ''}
+                    ${feedback.task_title ? `<div class="feedback-task">بشأن: ${feedback.task_title}</div>` : ''}
                     <div class="feedback-message">${feedback.message}</div>
-                    ${feedback.quality_rating ? `<div class="quality-badge">Quality: ${feedback.quality_rating}/5</div>` : ''}
+                    ${feedback.quality_rating ? `<div class="quality-badge">الجودة: ${feedback.quality_rating}/5</div>` : ''}
                 </div>
             </div>
         `).join('');
@@ -1110,17 +1117,17 @@ class TechCorpPerformanceSystem {
             this.charts.teamPerformance = new Chart(teamCtx, {
                 type: 'line',
                 data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+                    labels: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس'],
                     datasets: [{
-                        label: 'Team Average Performance',
-                        data: [3.8, 4.0, 4.1, 3.9, 4.2, 4.3, 4.1, 4.2],
+                        label: 'متوسط أداء الفريق',
+                        data: [4.0, 4.1, 4.3, 4.2, 4.5, 4.4, 4.6, 4.5],
                         borderColor: '#1FB8CD',
                         backgroundColor: 'rgba(31, 184, 205, 0.1)',
                         tension: 0.4,
                         fill: true
                     }, {
-                        label: 'Task Completion Rate',
-                        data: [82, 85, 87, 84, 89, 91, 88, 87],
+                        label: 'معدل إنجاز المهام',
+                        data: [85, 87, 88, 86, 90, 91, 89, 90],
                         borderColor: '#FFC185',
                         backgroundColor: 'rgba(255, 193, 133, 0.1)',
                         tension: 0.4,
@@ -1149,7 +1156,7 @@ class TechCorpPerformanceSystem {
                             beginAtZero: true,
                             max: 5,
                             ticks: { stepSize: 1 },
-                            title: { display: true, text: 'Performance Score' }
+                            title: { display: true, text: 'درجة الأداء' }
                         },
                         y1: {
                             type: 'linear',
@@ -1157,7 +1164,7 @@ class TechCorpPerformanceSystem {
                             position: 'right',
                             beginAtZero: true,
                             max: 100,
-                            title: { display: true, text: 'Completion Rate (%)' },
+                            title: { display: true, text: 'معدل الإنجاز (%)' },
                             grid: { drawOnChartArea: false }
                         }
                     },
@@ -1177,14 +1184,14 @@ class TechCorpPerformanceSystem {
             const performanceData = employee ? [
                 ...employee.historical.map(h => h.final_score),
                 employee.current_month.final_score
-            ] : [3.5, 3.8, 4.0, 4.2];
+            ] : [4.2, 4.3, 4.5, 4.55];
             
             this.charts.personalTrend = new Chart(personalCtx, {
                 type: 'line',
                 data: {
-                    labels: ['May', 'Jun', 'Jul', 'Aug'],
+                    labels: ['مايو', 'يونيو', 'يوليو', 'أغسطس'],
                     datasets: [{
-                        label: 'Your Performance',
+                        label: 'أدائك',
                         data: performanceData,
                         borderColor: '#1FB8CD',
                         backgroundColor: 'rgba(31, 184, 205, 0.1)',
@@ -1206,7 +1213,7 @@ class TechCorpPerformanceSystem {
                             titleColor: '#fff',
                             bodyColor: '#fff',
                             callbacks: {
-                                label: (context) => `Performance: ${context.parsed.y.toFixed(1)}/5`
+                                label: (context) => `الأداء: ${context.parsed.y.toFixed(1)}/5`
                             }
                         }
                     },
@@ -1227,9 +1234,9 @@ class TechCorpPerformanceSystem {
             this.charts.executiveSummary = new Chart(execCtx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Engineering', 'Marketing', 'Sales', 'Design', 'Analytics'],
+                    labels: ['تكنولوجيا المعلومات', 'الموارد البشرية', 'المبيعات', 'التسويق', 'المالية'],
                     datasets: [{
-                        data: [4.2, 4.0, 4.1, 4.3, 3.9],
+                        data: [4.5, 4.2, 4.8, 4.3, 4.0],
                         backgroundColor: ['#1FB8CD', '#FFC185', '#B4413C', '#ECEBD5', '#5D878F'],
                         borderWidth: 0
                     }]
@@ -1255,10 +1262,10 @@ class TechCorpPerformanceSystem {
             this.charts.engagement = new Chart(engagementCtx, {
                 type: 'bar',
                 data: {
-                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    labels: ['أحد', 'اثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت'],
                     datasets: [{
-                        label: 'Active Users',
-                        data: [42, 45, 48, 47, 44, 12, 8],
+                        label: 'المستخدمون النشطون',
+                        data: [50, 60, 65, 62, 58, 20, 10],
                         backgroundColor: '#1FB8CD',
                         borderRadius: 4
                     }]
@@ -1279,10 +1286,10 @@ class TechCorpPerformanceSystem {
             this.charts.trends = new Chart(trendCtx, {
                 type: 'line',
                 data: {
-                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                    labels: ['الأسبوع 1', 'الأسبوع 2', 'الأسبوع 3', 'الأسبوع 4'],
                     datasets: [{
-                        label: 'System Usage',
-                        data: [78, 82, 85, 87],
+                        label: 'استخدام النظام',
+                        data: [80, 85, 90, 92],
                         borderColor: '#5D878F',
                         tension: 0.4
                     }]
@@ -1335,7 +1342,7 @@ class TechCorpPerformanceSystem {
                     <div class="notification-type-icon">${notification.icon}</div>
                     <div>
                         <div class="notification-text">${notification.message}</div>
-                        <div class="notification-time">${this.getTimeAgo(notification.timestamp)}</div>
+                        <div class="notification-time">منذ ${this.getTimeAgo(notification.timestamp)}</div>
                     </div>
                 </div>
             </div>
@@ -1555,27 +1562,27 @@ class TechCorpPerformanceSystem {
             <table>
                 <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Department</th>
-                        <th>Role</th>
-                        <th>Status</th>
-                        <th>Last Active</th>
-                        <th>Actions</th>
+                        <th>الاسم</th>
+                        <th>البريد الإلكتروني</th>
+                        <th>القسم</th>
+                        <th>الدور</th>
+                        <th>الحالة</th>
+                        <th>آخر نشاط</th>
+                        <th>الإجراءات</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${allUsers.map(user => `
                         <tr>
                             <td>${user.name}</td>
-                            <td>${user.email || `${user.name.toLowerCase().replace(' ', '.')}@techcorp.com`}</td>
+                            <td>${user.email || `${user.name.toLowerCase().replace(' ', '.')}@mycompany.com`}</td>
                             <td>${user.department}</td>
-                            <td>${user.role || 'employee'}</td>
-                            <td><span class="status status--success">Active</span></td>
-                            <td>${Math.floor(Math.random() * 24)} hours ago</td>
+                            <td>${user.role || 'موظف'}</td>
+                            <td><span class="status status--success">نشط</span></td>
+                            <td>منذ ${Math.floor(Math.random() * 24)} ساعة</td>
                             <td>
-                                <button class="btn--sm btn--outline" onclick="pms.editUser('${user.id}')">Edit</button>
-                                <button class="btn--sm btn--secondary" onclick="pms.viewUserDetails('${user.id}')">View</button>
+                                <button class="btn--sm btn--outline" onclick="pms.editUser('${user.id}')">تعديل</button>
+                                <button class="btn--sm btn--secondary" onclick="pms.viewUserDetails('${user.id}')">عرض</button>
                             </td>
                         </tr>
                     `).join('')}
@@ -1596,18 +1603,18 @@ class TechCorpPerformanceSystem {
         if (!container) return;
         
         const auditEntries = [
-            {action: 'User login', user: 'John Smith', time: new Date(Date.now() - 30 * 60 * 1000)},
-            {action: 'Task completed', user: 'Sarah Johnson', time: new Date(Date.now() - 45 * 60 * 1000)},
-            {action: 'Evaluation submitted', user: 'David Brown', time: new Date(Date.now() - 60 * 60 * 1000)},
-            {action: 'Report generated', user: 'Admin User', time: new Date(Date.now() - 90 * 60 * 1000)},
-            {action: 'User created', user: 'Admin User', time: new Date(Date.now() - 120 * 60 * 1000)}
+            {action: 'تسجيل دخول مستخدم', user: 'علي محمد', time: new Date(Date.now() - 30 * 60 * 1000)},
+            {action: 'مهمة مكتملة', user: 'سارة حسن', time: new Date(Date.now() - 45 * 60 * 1000)},
+            {action: 'تم إرسال تقييم', user: 'أحمد علي', time: new Date(Date.now() - 60 * 60 * 1000)},
+            {action: 'تم إنشاء تقرير', user: 'مستخدم إداري', time: new Date(Date.now() - 90 * 60 * 1000)},
+            {action: 'تم إنشاء مستخدم', user: 'مستخدم إداري', time: new Date(Date.now() - 120 * 60 * 1000)}
         ];
         
         container.innerHTML = auditEntries.map(entry => `
             <div class="audit-entry">
                 <span class="audit-action">${entry.action}</span>
                 <span class="audit-user">${entry.user}</span>
-                <span class="audit-time">${this.getTimeAgo(entry.time)}</span>
+                <span class="audit-time">منذ ${this.getTimeAgo(entry.time)}</span>
             </div>
         `).join('');
     }
@@ -1648,7 +1655,7 @@ class TechCorpPerformanceSystem {
         // Update employee streaks and achievements
         this.updateEmployeeStreaks(task.assigned_to, timeliness_multiplier > 0.9);
         
-        this.showToast(`Task "${task.title}" completed successfully!`, 'success');
+        this.showToast(`تم إنجاز مهمة "${task.title}" بنجاح!`, 'success');
         this.loadViewData(this.currentView);
         
         // Generate feedback request notification
@@ -1666,13 +1673,13 @@ class TechCorpPerformanceSystem {
     showTaskReviewModal() {
         // This would open a modal for task review
         // For now, simulate the review process
-        this.showToast('Task review functionality activated. Please rate the task quality.', 'info');
+        this.showToast('تم تفعيل وظيفة مراجعة المهام. يرجى تقييم جودة المهمة.', 'info');
         
         // Simulate rating assignment
         setTimeout(() => {
             if (this.currentTask) {
                 this.currentTask.quality_rating = 4 + Math.random(); // Random rating between 4-5
-                this.showToast(`Task rated ${this.currentTask.quality_rating.toFixed(1)}/5`, 'success');
+                this.showToast(`تم تقييم المهمة ${this.currentTask.quality_rating.toFixed(1)}/5`, 'success');
                 this.generateFeedback();
                 this.loadViewData(this.currentView);
             }
@@ -1697,7 +1704,7 @@ class TechCorpPerformanceSystem {
         
         // This would show the comprehensive evaluation modal
         // For demo purposes, simulate completion
-        this.showToast(`Starting evaluation for ${employee.name}...`, 'info');
+        this.showToast(`بدء تقييم الموظف ${employee.name}...`, 'info');
         
         setTimeout(() => {
             this.completeEvaluation();
@@ -1739,7 +1746,7 @@ class TechCorpPerformanceSystem {
         }
         this.employeeEvaluations[employeeId].current_month = evaluation;
         
-        this.showToast(`Evaluation completed for ${employee.name}. Final score: ${evaluation.final_score.toFixed(1)}/5`, 'success');
+        this.showToast(`اكتمل تقييم ${employee.name}. النتيجة النهائية: ${evaluation.final_score.toFixed(1)}/5`, 'success');
         this.currentEvaluation = null;
         this.loadViewData(this.currentView);
     }
@@ -1787,7 +1794,7 @@ class TechCorpPerformanceSystem {
             id: Date.now(),
             type: "celebration",
             icon: badge.icon,
-            message: `Congratulations! ${employee.name} earned the "${badge.name}" badge!`,
+            message: `تهانينا! ${employee.name} حصل على وسام "${badge.name}"!`,
             urgency: "low",
             timestamp: new Date(),
             read: false,
@@ -1795,7 +1802,7 @@ class TechCorpPerformanceSystem {
             related_achievement: badge.name
         });
         
-        this.showToast(`🎉 Badge Unlocked: ${badge.name}!`, 'success');
+        this.showToast(`🎉 تم الحصول على وسام: ${badge.name}!`, 'success');
         this.updateNotificationBadge();
     }
     
@@ -1811,9 +1818,9 @@ class TechCorpPerformanceSystem {
         if (achievements.streaks.onTime < 10) {
             suggestions.push({
                 id: 'time-mgmt-1',
-                title: 'Improve Time Management',
-                description: 'Try time-blocking your calendar to dedicate specific hours for focused work.',
-                impact: 'High - Can improve on-time completion by 25%',
+                title: 'تحسين إدارة الوقت',
+                description: 'جرب تقنية Time-blocking لتخصيص ساعات محددة للعمل المركز.',
+                impact: 'عالي - يمكن أن يحسن إكمال المهام في الوقت المحدد بنسبة 25%',
                 resourceId: 'time-blocking-guide',
                 status: 'active'
             });
@@ -1823,9 +1830,9 @@ class TechCorpPerformanceSystem {
         if (evaluation?.current_month?.task_performance < 4.0) {
             suggestions.push({
                 id: 'quality-1',
-                title: 'Enhance Quality Control',
-                description: 'Implement a personal review checklist before task submission.',
-                impact: 'Medium - Can increase quality ratings by 15%',
+                title: 'تعزيز ضبط الجودة',
+                description: 'نفّذ قائمة مراجعة شخصية قبل تسليم المهام.',
+                impact: 'متوسط - يمكن أن يزيد تقييمات الجودة بنسبة 15%',
                 resourceId: 'quality-checklist',
                 status: 'active'
             });
@@ -1835,9 +1842,9 @@ class TechCorpPerformanceSystem {
         if (evaluation?.current_month?.team_collaboration < 4.0) {
             suggestions.push({
                 id: 'collab-1',
-                title: 'Boost Team Collaboration',
-                description: 'Schedule regular check-ins with team members on shared projects.',
-                impact: 'High - Improves team performance and relationships',
+                title: 'تعزيز التعاون مع الفريق',
+                description: 'حدد اجتماعات دورية مع أعضاء الفريق في المشاريع المشتركة.',
+                impact: 'عالي - يحسن أداء الفريق والعلاقات',
                 resourceId: 'collaboration-guide',
                 status: 'active'
             });
@@ -1846,9 +1853,9 @@ class TechCorpPerformanceSystem {
         // Add some completed suggestions for demo
         suggestions.push({
             id: 'completed-1',
-            title: 'Daily Planning Routine',
-            description: 'Establish a morning routine to plan your daily tasks and priorities.',
-            impact: 'Completed',
+            title: 'روتين التخطيط اليومي',
+            description: 'ضع روتيناً صباحياً لتخطيط مهامك اليومية وأولوياتك.',
+            impact: 'مكتمل',
             status: 'completed',
             completedDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000)
         });
@@ -1865,16 +1872,16 @@ class TechCorpPerformanceSystem {
         const currentStreak = achievements.streaks.onTime || 0;
         const nextTimelinessTarget = currentStreak < 5 ? 5 : currentStreak < 20 ? 20 : 50;
         milestones.push({
-            name: currentStreak < 5 ? 'On-Time Starter' : currentStreak < 20 ? 'Deadline Master' : 'Time Champion',
+            name: currentStreak < 5 ? 'بداية في الوقت المحدد' : currentStreak < 20 ? 'محترف المواعيد' : 'بطل الوقت',
             icon: currentStreak < 5 ? '⏰' : currentStreak < 20 ? '🎯' : '🏆',
             current: currentStreak,
             target: nextTimelinessTarget
         });
         
         // Quality milestone
-        const qualityProgress = achievements.progress['Excellence Expert'] || 0;
+        const qualityProgress = achievements.progress['خبير التميز'] || 0;
         milestones.push({
-            name: 'Excellence Expert',
+            name: 'خبير التميز',
             icon: '🌟',
             current: qualityProgress,
             target: 2
@@ -1891,10 +1898,10 @@ class TechCorpPerformanceSystem {
         const hours = Math.floor(diff / (1000 * 60 * 60));
         const days = Math.floor(diff / (1000 * 60 * 60 * 24));
         
-        if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
-        if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-        if (minutes > 0) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
-        return 'Just now';
+        if (days > 0) return `${days} يوم${days > 1 ? 's' : ''}`;
+        if (hours > 0) return `${hours} ساعة${hours > 1 ? 's' : ''}`;
+        if (minutes > 0) return `${minutes} دقيقة${minutes > 1 ? 's' : ''}`;
+        return 'الآن';
     }
     
     getTimeUntilDeadline(deadline) {
@@ -1903,9 +1910,9 @@ class TechCorpPerformanceSystem {
         const hours = Math.floor(diff / (1000 * 60 * 60));
         const days = Math.floor(diff / (1000 * 60 * 60 * 24));
         
-        if (days > 0) return `${days} day${days > 1 ? 's' : ''} left`;
-        if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} left`;
-        return 'Due soon';
+        if (days > 0) return `متبقي ${days} يوم`;
+        if (hours > 0) return `متبقي ${hours} ساعة`;
+        return 'مستحق قريبًا';
     }
     
     findBadgeDefinition(badgeName) {
@@ -1950,7 +1957,7 @@ class TechCorpPerformanceSystem {
                     element.style.color = 'var(--color-warning)';
                 }
             } else {
-                element.textContent = 'OVERDUE';
+                element.textContent = 'متأخر';
                 element.style.color = 'var(--color-error)';
                 element.classList.add('overdue');
             }
@@ -2051,7 +2058,7 @@ class TechCorpPerformanceSystem {
             type: 'feedback_request',
             icon: '💬',
             urgency: 'high',
-            message: `Please provide feedback for completed task: ${task.title}`,
+            message: `الرجاء تقديم ملاحظاتك حول المهمة المكتملة: ${task.title}`,
             timestamp: new Date(),
             read: false,
             employee: task.assigned_by,
@@ -2075,7 +2082,7 @@ class TechCorpPerformanceSystem {
         this.feedbackConversations[this.currentTask.id].push({
             id: Date.now(),
             sender: 'manager',
-            sender_name: 'David Brown',
+            sender_name: 'أحمد علي',
             message: randomTemplate,
             timestamp: new Date(),
             quality_rating: this.currentTask.quality_rating,
@@ -2086,20 +2093,20 @@ class TechCorpPerformanceSystem {
     }
     
     // Placeholder methods for additional functionality
-    showTaskModal() { this.showToast('Task assignment modal opened', 'info'); }
-    closeModal(modalId) { this.showToast('Modal closed', 'info'); }
-    assignTask() { this.showToast('Task assigned successfully', 'success'); }
-    showTaskDetails(taskId) { const task = this.tasks.find(t => t.id === taskId); if (task) this.showToast(`Viewing details for task: ${task.title}`, 'info'); }
-    completeSuggestion(suggestionId) { this.showToast('Suggestion marked as completed!', 'success'); this.loadPersonalSuggestions(); }
-    viewResource(resourceId) { this.showToast(`Opening learning resource: ${resourceId}`, 'info'); }
-    editUser(userId) { this.showToast(`Opening user edit dialog for user: ${userId}`, 'info'); }
-    viewUserDetails(userId) { this.showToast(`Viewing user details for: ${userId}`, 'info'); }
-    logout() { if (confirm('Are you sure you want to logout?')) { this.showToast('Logging out...', 'info'); } }
-    switchChartView(chartType) { document.querySelectorAll('.chart-btn').forEach(btn => btn.classList.remove('active')); document.querySelector(`[data-chart="${chartType}"]`)?.classList.add('active'); this.showToast(`Switched to ${chartType} view`, 'info'); }
-    accessResource(resourceTitle) { this.showToast(`Accessing resource: ${resourceTitle}`, 'info'); }
+    showTaskModal() { this.showToast('تم فتح نافذة تعيين مهمة', 'info'); }
+    closeModal(modalId) { this.showToast('تم إغلاق النافذة', 'info'); }
+    assignTask() { this.showToast('تم تعيين المهمة بنجاح', 'success'); }
+    showTaskDetails(taskId) { const task = this.tasks.find(t => t.id === taskId); if (task) this.showToast(`عرض تفاصيل المهمة: ${task.title}`, 'info'); }
+    completeSuggestion(suggestionId) { this.showToast('تم وضع الاقتراح كـ مكتمل!', 'success'); this.loadPersonalSuggestions(); }
+    viewResource(resourceId) { this.showToast(`فتح المصدر التعليمي: ${resourceId}`, 'info'); }
+    editUser(userId) { this.showToast(`فتح مربع حوار تعديل المستخدم: ${userId}`, 'info'); }
+    viewUserDetails(userId) { this.showToast(`عرض تفاصيل المستخدم: ${userId}`, 'info'); }
+    logout() { if (confirm('هل أنت متأكد أنك تريد تسجيل الخروج؟')) { this.showToast('تسجيل الخروج...', 'info'); } }
+    switchChartView(chartType) { document.querySelectorAll('.chart-btn').forEach(btn => btn.classList.remove('active')); document.querySelector(`[data-chart="${chartType}"]`)?.classList.add('active'); this.showToast(`تم التبديل إلى عرض ${chartType}`, 'info'); }
+    accessResource(resourceTitle) { this.showToast(`الوصول إلى المصدر: ${resourceTitle}`, 'info'); }
     handleFormSubmission(event) { console.log('Form submitted:', event); }
-    handleKeyboardShortcuts(event) { if (event.ctrlKey && event.key === '/') { event.preventDefault(); this.showToast('Help shortcuts: Ctrl+/ for help, Ctrl+K for search', 'info'); } if (event.ctrlKey && event.key === 'k') { event.preventDefault(); document.getElementById('globalSearch')?.focus(); } }
-    viewEvaluation(empId) { this.showToast(`Viewing evaluation for employee: ${empId}`, 'info'); }
+    handleKeyboardShortcuts(event) { if (event.ctrlKey && event.key === '/') { event.preventDefault(); this.showToast('اختصارات المساعدة: Ctrl+/ للمساعدة، Ctrl+K للبحث', 'info'); } if (event.ctrlKey && event.key === 'k') { event.preventDefault(); document.getElementById('globalSearch')?.focus(); } }
+    viewEvaluation(empId) { this.showToast(`عرض تقييم الموظف: ${empId}`, 'info'); }
     loadFeedbackMetrics() { /* Load feedback metrics for manager dashboard */ }
 }
 
@@ -2116,7 +2123,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Add some interactive demo features
     setTimeout(() => {
-        pms.showToast('Welcome to TechCorp Performance Management System!', 'success');
+        pms.showToast('مرحباً بك في نظام إدارة الأداء لمنظمتي!', 'success');
     }, 1000);
     
     console.log('TechCorp PMS fully loaded and ready');
