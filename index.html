@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechCorp Performance Management System</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Navigation Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1 class="app-title">TechCorp Performance Management</h1>
+                    <div class="company-info">
+                        <span class="company-stats">63 Employees • 5 Departments</span>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <!-- Search Bar -->
+                    <div class="search-container">
+                        <input type="text" class="search-input" placeholder="Search employees, tasks, reports..." id="globalSearch">
+                        <button class="search-btn">🔍</button>
+                    </div>
+                    
+                    <!-- Notification Center -->
+                    <div class="notification-center">
+                        <button class="notification-btn" onclick="toggleNotifications()">
+                            <span class="notification-icon">🔔</span>
+                            <span class="notification-badge" id="notificationBadge">8</span>
+                        </button>
+                        <div class="notification-dropdown hidden" id="notificationDropdown">
+                            <div class="notification-header">
+                                <h3>Notifications</h3>
+                                <div class="notification-controls">
+                                    <button class="btn--sm btn--outline" onclick="markAllRead()">Mark All Read</button>
+                                    <button class="btn--sm btn--secondary" onclick="manageNotificationSettings()">Settings</button>
+                                </div>
+                            </div>
+                            <div class="notification-filters">
+                                <button class="filter-btn active" data-type="all">All</button>
+                                <button class="filter-btn" data-type="deadlines">Deadlines</button>
+                                <button class="filter-btn" data-type="achievements">Achievements</button>
+                                <button class="filter-btn" data-type="feedback">Feedback</button>
+                            </div>
+                            <div class="notification-list" id="notificationList">
+                                <!-- Notifications will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Actions -->
+                    <div class="quick-actions">
+                        <button class="btn btn--outline" onclick="showQuickActions()">Quick Actions ⚡</button>
+                    </div>
+                    
+                    <!-- User Profile -->
+                    <div class="user-profile">
+                        <div class="user-avatar">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='%23626c7c' stroke-width='2'%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'%3E%3C/path%3E%3Ccircle cx='12' cy='7' r='4'%3E%3C/circle%3E%3C/svg%3E" alt="Profile">
+                        </div>
+                        <div class="user-info">
+                            <span class="user-name" id="currentUser">David Brown</span>
+                            <span class="user-role">Engineering Manager</span>
+                        </div>
+                        <div class="user-dropdown">
+                            <button class="dropdown-btn">⚙️</button>
+                            <div class="dropdown-menu">
+                                <a href="#" onclick="showProfile()">My Profile</a>
+                                <a href="#" onclick="showSettings()">Settings</a>
+                                <a href="#" onclick="showHelp()">Help & Support</a>
+                                <a href="#" onclick="logout()">Logout</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <nav class="main-nav">
+                <button class="nav-btn active" onclick="showView('manager')">
+                    <span class="nav-icon">👥</span>
+                    <span class="nav-text">Manager Dashboard</span>
+                </button>
+                <button class="nav-btn" onclick="showView('employee')">
+                    <span class="nav-icon">👤</span>
+                    <span class="nav-text">Employee View</span>
+                </button>
+                <button class="nav-btn" onclick="showView('reports')">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Reports & Analytics</span>
+                </button>
+                <button class="nav-btn" onclick="showView('admin')">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-text">Admin Center</span>
+                </button>
+            </nav>
+        </header>
+
+        <!-- Toast Notifications -->
+        <div class="toast-container" id="toastContainer"></div>
+
+        <!-- Manager Dashboard -->
+        <div id="manager-view" class="view-container active">
+            <div class="dashboard-header">
+                <div class="header-left">
+                    <h2>Manager Dashboard</h2>
+                    <p>Engineering Department • 15 Team Members</p>
+                </div>
+                <div class="header-right">
+                    <div class="date-range-selector">
+                        <select class="form-control" id="managerTimeRange">
+                            <option value="week">This Week</option>
+                            <option value="month" selected>This Month</option>
+                            <option value="quarter">This Quarter</option>
+                        </select>
+                    </div>
+                    <button class="btn btn--primary" onclick="showBulkActions()">Bulk Actions</button>
+                </div>
+            </div>
+
+            <!-- Key Performance Indicators -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-value">4.2</div>
+                    <div class="kpi-label">Team Average</div>
+                    <div class="kpi-trend positive">+0.3 vs last month</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">87%</div>
+                    <div class="kpi-label">Task Completion</div>
+                    <div class="kpi-trend positive">+5% vs last month</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">23</div>
+                    <div class="kpi-label">Pending Reviews</div>
+                    <div class="kpi-trend neutral">Due within 2 days</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">95%</div>
+                    <div class="kpi-label">Employee Satisfaction</div>
+                    <div class="kpi-trend positive">+2% vs last month</div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <!-- Team Performance Overview -->
+                <div class="card dashboard-card wide">
+                    <div class="card__header">
+                        <h3>Team Performance Trends</h3>
+                        <div class="chart-controls">
+                            <button class="chart-btn active" data-chart="performance">Performance</button>
+                            <button class="chart-btn" data-chart="workload">Workload</button>
+                            <button class="chart-btn" data-chart="quality">Quality</button>
+                        </div>
+                    </div>
+                    <div class="card__body">
+                        <div class="chart-container" style="position: relative; height: 300px;">
+                            <canvas id="teamPerformanceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Task Management -->
+                <div class="card dashboard-card">
+                    <div class="card__header">
+                        <h3>Task Management</h3>
+                        <button class="btn btn--outline btn--sm" onclick="showTaskModal()">+ Assign Task</button>
+                    </div>
+                    <div class="card__body">
+                        <div class="task-stats">
+                            <div class="stat-item">
+                                <div class="stat-value">156</div>
+                                <div class="stat-label">Active Tasks</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">23</div>
+                                <div class="stat-label">Due Today</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">8</div>
+                                <div class="stat-label">Overdue</div>
+                            </div>
+                        </div>
+                        <div class="task-priority-breakdown">
+                            <div class="priority-item">
+                                <span class="priority-indicator critical"></span>
+                                <span>Critical: 12 tasks</span>
+                            </div>
+                            <div class="priority-item">
+                                <span class="priority-indicator high"></span>
+                                <span>High: 34 tasks</span>
+                            </div>
+                            <div class="priority-item">
+                                <span class="priority-indicator medium"></span>
+                                <span>Medium: 67 tasks</span>
+                            </div>
+                            <div class="priority-item">
+                                <span class="priority-indicator low"></span>
+                                <span>Low: 43 tasks</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pending Reviews -->
+                <div class="card dashboard-card">
+                    <div class="card__header">
+                        <h3>Pending Reviews</h3>
+                        <span class="status status--warning">23 Awaiting</span>
+                    </div>
+                    <div class="card__body">
+                        <div class="review-queue" id="pendingReviews">
+                            <!-- Reviews will be loaded here -->
+                        </div>
+                        <button class="btn btn--secondary btn--full-width" onclick="showBatchReview()">Batch Review Mode</button>
+                    </div>
+                </div>
+
+                <!-- Team Achievements -->
+                <div class="card dashboard-card">
+                    <div class="card__header">
+                        <h3>Team Achievements</h3>
+                        <button class="btn btn--outline btn--sm" onclick="showAchievementCenter()">Achievement Center</button>
+                    </div>
+                    <div class="card__body">
+                        <div class="achievement-summary">
+                            <div class="achievement-metric">
+                                <span class="metric-icon">🏆</span>
+                                <div class="metric-info">
+                                    <div class="metric-value">47</div>
+                                    <div class="metric-label">Badges Earned</div>
+                                </div>
+                            </div>
+                            <div class="achievement-metric">
+                                <span class="metric-icon">🔥</span>
+                                <div class="metric-info">
+                                    <div class="metric-value">12</div>
+                                    <div class="metric-label">Active Streaks</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="recent-achievements" id="recentAchievements">
+                            <!-- Recent achievements will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Monthly Evaluations -->
+                <div class="card dashboard-card">
+                    <div class="card__header">
+                        <h3>Monthly Evaluations</h3>
+                        <button class="btn btn--primary btn--sm" onclick="showEvaluationPlanner()">Plan Evaluations</button>
+                    </div>
+                    <div class="card__body">
+                        <div class="evaluation-progress">
+                            <div class="progress-ring">
+                                <svg width="60" height="60">
+                                    <circle cx="30" cy="30" r="25" fill="none" stroke="var(--color-secondary)" stroke-width="4"/>
+                                    <circle cx="30" cy="30" r="25" fill="none" stroke="var(--color-primary)" stroke-width="4" 
+                                            stroke-dasharray="157" stroke-dashoffset="47" transform="rotate(-90 30 30)"/>
+                                </svg>
+                                <div class="progress-text">70%</div>
+                            </div>
+                            <div class="progress-info">
+                                <div class="progress-stat">10 of 15 completed</div>
+                                <div class="progress-deadline">5 due this week</div>
+                            </div>
+                        </div>
+                        <div class="evaluation-list" id="evaluationList">
+                            <!-- Evaluations will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feedback Analytics -->
+                <div class="card dashboard-card">
+                    <div class="card__header">
+                        <h3>Feedback & Development</h3>
+                    </div>
+                    <div class="card__body">
+                        <div class="feedback-metrics">
+                            <div class="metric-row">
+                                <span class="metric-label">Response Rate</span>
+                                <span class="metric-value">94%</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label">Avg Response Time</span>
+                                <span class="metric-value">2.3h</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label">Suggestions Implemented</span>
+                                <span class="metric-value">78%</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label">Development Plans Active</span>
+                                <span class="metric-value">12</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Employee Dashboard -->
+        <div id="employee-view" class="view-container">
+            <div class="dashboard-header">
+                <div class="header-left">
+                    <h2>Employee Dashboard</h2>
+                    <div class="employee-selector">
+                        <label class="form-label">View as:</label>
+                        <select class="form-control" id="employeeSelector" onchange="switchEmployee()">
+                            <option value="emp001">John Smith - Software Developer</option>
+                            <option value="emp002">Sarah Johnson - Marketing Specialist</option>
+                            <option value="emp003">Mike Chen - Data Analyst</option>
+                            <option value="emp004">Lisa Williams - UX Designer</option>
+                            <option value="emp005">James Rodriguez - Sales Representative</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="employee-status">
+                        <span class="status-indicator online"></span>
+                        <span class="status-text">Active</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Employee KPIs -->
+            <div class="kpi-grid">
+                <div class="kpi-card personal">
+                    <div class="kpi-value" id="personalScore">4.2</div>
+                    <div class="kpi-label">Your Score</div>
+                    <div class="kpi-trend positive">+0.3 this month</div>
+                </div>
+                <div class="kpi-card personal">
+                    <div class="kpi-value">92%</div>
+                    <div class="kpi-label">On-time Rate</div>
+                    <div class="kpi-trend positive">+5% improvement</div>
+                </div>
+                <div class="kpi-card personal">
+                    <div class="kpi-value">15</div>
+                    <div class="kpi-label">Day Streak</div>
+                    <div class="kpi-trend">🔥 Personal Best!</div>
+                </div>
+                <div class="kpi-card personal">
+                    <div class="kpi-value">7</div>
+                    <div class="kpi-label">Badges Earned</div>
+                    <div class="kpi-trend positive">+2 this month</div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <!-- Performance Summary -->
+                <div class="card dashboard-card wide">
+                    <div class="card__header">
+                        <h3>Performance Overview</h3>
+                        <div class="performance-period">
+                            <select class="form-control">
+                                <option>Last 30 Days</option>
+                                <option>Last 90 Days</option>
+                                <option>Year to Date</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card__body">
+                        <div class="performance-breakdown">
+                            <div class="breakdown-section">
+                                <h4>Task Performance (50%)</h4>
+                                <div class="score-display">
+                                    <div class="score-value">4.1</div>
+                                    <div class="score-components">
+                                        <div class="component">
+                                            <span>Quality Rating</span>
+                                            <span>4.3/5</span>
+                                        </div>
+                                        <div class="component">
+                                            <span>Timeliness</span>
+                                            <span>3.9/5</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="breakdown-section">
+                                <h4>Attitude Evaluation (50%)</h4>
+                                <div class="score-display">
+                                    <div class="score-value">4.3</div>
+                                    <div class="score-components">
+                                        <div class="component">
+                                            <span>Work Engagement (20%)</span>
+                                            <span>4.5/5</span>
+                                        </div>
+                                        <div class="component">
+                                            <span>Team Collaboration (25%)</span>
+                                            <span>4.2/5</span>
+                                        </div>
+                                        <div class="component">
+                                            <span>Communication (20%)</span>
+                                            <span>4.4/5</span>
+                                        </div>
+                                        <div class="component">
+                                            <span>Reliability (15%)</span>
+                                            <span>4.1/5</span>
+                                        </div>
+                                        <div class="component">
+                                            <span>Adaptability (20%)</span>
+                                            <span>4.3/5</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chart-container" style="position: relative; height: 200px;">
+                            <canvas id="personalTrendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current Tasks -->
+                <div class="card dashboard-card">
+                    <div class="card__header">
+                        <h3>Your Tasks</h3>
+                        <div class="task-filter">
+                            <button class="filter-btn active" data-filter="all">All</button>
+                            <button class="filter-btn" data-filter="today">Today</button>
+                            <button class="filter-btn" data-filter="overdue">Overdue</button>
+                        </div>
+                    </div>
+                    <div class="card__body">
+                        <div class="task-list" id="employeeTasks">
+                            <!-- Tasks will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Achievement Showcase -->
+                <div class="card dashboard-card">
+                    <div class="card__header">
+                        <h3>Your Achievements</h3>
+                        <button class="btn btn--outline btn--sm" onclick="showBadgeCollection()">View All Badges</button>
+                    </div>
+                    <div class="card__body">
+                        <div class="badge-showcase" id="badgeShowcase">
+                            <!-- Badges will be loaded here -->
+                        </div>
+                        <div class="achievement-progress">
+                            <h4>Next Milestones</h4>
+                            <div class="milestone-list" id="nextMilestones">
+                                <!-- Milestones will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Personal Development -->
+                <div class="card dashboard-card">
+                    <div class="card__header">
+                        <h3>Development Plan</h3>
+                        <button class="btn btn--primary btn--sm" onclick="showDevelopmentPlan()">View Full Plan</button>
+                    </div>
+                    <div class="card__body">
+                        <div class="development-goals" id="developmentGoals">
+                            <!-- Development goals will be loaded here -->
+                        </div>
+                        <div class="learning-resources">
+                            <h4>Recommended Resources</h4>
+                            <div class="resource-list" id="learningResources">
+                                <!-- Resources will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feedback Hub -->
+                <div class="card dashboard-card">
+                    <div class="card__header">
+                        <h3>Feedback & Communication</h3>
+                        <button class="btn btn--outline btn--sm" onclick="requestFeedback()">Request Feedback</button>
+                    </div>
+                    <div class="card__body">
+                        <div class="feedback-summary">
+                            <div class="feedback-stat">
+                                <span class="stat-label">Feedback Received</span>
+                                <span class="stat-value">18 this month</span>
+                            </div>
+                            <div class="feedback-stat">
+                                <span class="stat-label">Average Rating</span>
+                                <span class="stat-value">4.2/5</span>
+                            </div>
+                        </div>
+                        <div class="recent-feedback" id="recentFeedback">
+                            <!-- Recent feedback will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Goal Tracking -->
+                <div class="card dashboard-card">
+                    <div class="card__header">
+                        <h3>Goal Progress</h3>
+                        <button class="btn btn--outline btn--sm" onclick="setNewGoal()">Set New Goal</button>
+                    </div>
+                    <div class="card__body">
+                        <div class="goal-list" id="goalProgress">
+                            <!-- Goals will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reports & Analytics Dashboard -->
+        <div id="reports-view" class="view-container">
+            <div class="dashboard-header">
+                <div class="header-left">
+                    <h2>Reports & Analytics</h2>
+                    <p>Comprehensive performance insights and business intelligence</p>
+                </div>
+                <div class="header-right">
+                    <button class="btn btn--outline" onclick="scheduleReport()">Schedule Report</button>
+                    <button class="btn btn--primary" onclick="exportData()">Export Data</button>
+                </div>
+            </div>
+
+            <!-- Report Categories -->
+            <div class="report-categories">
+                <button class="category-btn active" onclick="showReportCategory('manager')">
+                    <span class="category-icon">👥</span>
+                    <div class="category-info">
+                        <span class="category-title">Manager Reports</span>
+                        <span class="category-count">14 Reports</span>
+                    </div>
+                </button>
+                <button class="category-btn" onclick="showReportCategory('admin')">
+                    <span class="category-icon">📈</span>
+                    <div class="category-info">
+                        <span class="category-title">Admin Reports</span>
+                        <span class="category-count">14 Reports</span>
+                    </div>
+                </button>
+                <button class="category-btn" onclick="showReportCategory('executive')">
+                    <span class="category-icon">🎯</span>
+                    <div class="category-info">
+                        <span class="category-title">Executive Summary</span>
+                        <span class="category-count">Key Insights</span>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Manager Reports -->
+            <div id="manager-reports" class="report-section active">
+                <h3>Manager Dashboard Reports</h3>
+                <div class="report-grid">
+                    <div class="report-group">
+                        <h4>Team Performance Analytics</h4>
+                        <div class="report-list">
+                            <div class="report-card" onclick="generateReport('individual-trends')">
+                                <div class="report-icon">📊</div>
+                                <div class="report-info">
+                                    <h5>Individual Trends</h5>
+                                    <p>Track individual employee performance over time</p>
+                                </div>
+                                <div class="report-status ready">Ready</div>
+                            </div>
+                            <div class="report-card" onclick="generateReport('productivity-analytics')">
+                                <div class="report-icon">⚡</div>
+                                <div class="report-info">
+                                    <h5>Productivity Analytics</h5>
+                                    <p>Analyze task completion rates and efficiency</p>
+                                </div>
+                                <div class="report-status ready">Ready</div>
+                            </div>
+                            <div class="report-card" onclick="generateReport('quality-metrics')">
+                                <div class="report-icon">⭐</div>
+                                <div class="report-info">
+                                    <h5>Quality Metrics</h5>
+                                    <p>Review quality ratings and feedback patterns</p>
+                                </div>
+                                <div class="report-status ready">Ready</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-group">
+                        <h4>Behavioral Analytics</h4>
+                        <div class="report-list">
+                            <div class="report-card" onclick="generateReport('attitude-trends')">
+                                <div class="report-icon">💡</div>
+                                <div class="report-info">
+                                    <h5>Attitude Trends</h5>
+                                    <p>Monthly attitude evaluation analysis</p>
+                                </div>
+                                <div class="report-status ready">Ready</div>
+                            </div>
+                            <div class="report-card" onclick="generateReport('feedback-effectiveness')">
+                                <div class="report-icon">💬</div>
+                                <div class="report-info">
+                                    <h5>Feedback Effectiveness</h5>
+                                    <p>Impact of feedback on performance improvement</p>
+                                </div>
+                                <div class="report-status ready">Ready</div>
+                            </div>
+                            <div class="report-card" onclick="generateReport('achievement-progress')">
+                                <div class="report-icon">🏆</div>
+                                <div class="report-info">
+                                    <h5>Achievement Progress</h5>
+                                    <p>Badge earnings and milestone tracking</p>
+                                </div>
+                                <div class="report-status ready">Ready</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-group">
+                        <h4>Operational Reports</h4>
+                        <div class="report-list">
+                            <div class="report-card" onclick="generateReport('task-analysis')">
+                                <div class="report-icon">📋</div>
+                                <div class="report-info">
+                                    <h5>Task Analysis</h5>
+                                    <p>Task distribution and completion patterns</p>
+                                </div>
+                                <div class="report-status ready">Ready</div>
+                            </div>
+                            <div class="report-card" onclick="generateReport('collaboration-metrics')">
+                                <div class="report-icon">🤝</div>
+                                <div class="report-info">
+                                    <h5>Collaboration Metrics</h5>
+                                    <p>Team interaction and cooperation analysis</p>
+                                </div>
+                                <div class="report-status ready">Ready</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-group">
+                        <h4>Development & Management</h4>
+                        <div class="report-list">
+                            <div class="report-card" onclick="generateReport('employee-progression')">
+                                <div class="report-icon">📈</div>
+                                <div class="report-info">
+                                    <h5>Employee Progression</h5>
+                                    <p>Career development and skill advancement</p>
+                                </div>
+                                <div class="report-status ready">Ready</div>
+                            </div>
+                            <div class="report-card" onclick="generateReport('workload-balance')">
+                                <div class="report-icon">⚖️</div>
+                                <div class="report-info">
+                                    <h5>Workload Balance</h5>
+                                    <p>Task distribution and capacity analysis</p>
+                                </div>
+                                <div class="report-status ready">Ready</div>
+                            </div>
+                            <div class="report-card" onclick="generateReport('wellness-monitoring')">
+                                <div class="report-icon">🌟</div>
+                                <div class="report-info">
+                                    <h5>Wellness Monitoring</h5>
+                                    <p>Employee satisfaction and burnout prevention</p>
+                                </div>
+                                <div class="report-status ready">Ready</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Reports -->
+            <div id="admin-reports" class="report-section">
+                <h3>Administrative & Strategic Reports</h3>
+                <div class="report-grid">
+                    <div class="report-group">
+                        <h4>Organizational Performance</h4>
+                        <div class="report-list">
+                            <div class="report-card" onclick="generateReport('company-metrics')">
+                                <div class="report-icon">🏢</div>
+                                <div class="report-info">
+                                    <h5>Company Metrics</h5>
+                                    <p>Organization-wide performance overview</p>
+                                </div>
+                                <div class="report-status ready">Ready</div>
+                            </div>
+                            <div class="report-card" onclick="generateReport('department-comparison')">
+                                <div class="report-icon">📊</div>
+                                <div class="report-info">
+                                    <h5>Department Comparisons</h5>
+                                    <p>Cross-department performance analysis</p>
+                                </div>
+                                <div class="report-status ready">Ready</div>
+                            </div>
+                            <div class="report-card" onclick="generateReport('manager-effectiveness')">
+                                <div class="report-icon">👔</div>
+                                <div class="report-info">
+                                    <h5>Manager Effectiveness</h5>
+                                    <p>Management performance and team outcomes</p>
+                                </div>
+                                <div class="report-status ready">Ready</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-group">
+                        <h4>System Analytics</h4>
+                        <div class="report-list">
+                            <div class="report-card" onclick="generateReport('usage-analytics')">
+                                <div class="report-icon">📱</div>
+                                <div class="report-info">
+                                    <h5>Usage Analytics</h5>
+                                    <p>System adoption and engagement metrics</p>
+                                </div>
+                                <div class="report-status ready">Ready</div>
+                            </div>
+                            <div class="report-card" onclick="generateReport('predictive-analytics')">
+                                <div class="report-icon">🔮</div>
+                                <div class="report-info">
+                                    <h5>Predictive Analytics</h5>
+                                    <p>Performance forecasting and trend prediction</p>
+                                </div>
+                                <div class="report-status ready">Ready</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-group">
+                        <h4>ROI & Impact Analysis</h4>
+                        <div class="report-list">
+                            <div class="report-card" onclick="generateReport('productivity-impact')">
+                                <div class="report-icon">💰</div>
+                                <div class="report-info">
+                                    <h5>Productivity Impact</h5>
+                                    <p>ROI from performance management initiatives</p>
+                                </div>
+                                <div class="report-status ready">Ready</div>
+                            </div>
+                            <div class="report-card" onclick="generateReport('cost-benefit')">
+                                <div class="report-icon">📈</div>
+                                <div class="report-info">
+                                    <h5>Cost-Benefit Analysis</h5>
+                                    <p>Financial impact of system implementation</p>
+                                </div>
+                                <div class="report-status ready">Ready</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-group">
+                        <h4>Strategic & Compliance</h4>
+                        <div class="report-list">
+                            <div class="report-card" onclick="generateReport('succession-planning')">
+                                <div class="report-icon">🎯</div>
+                                <div class="report-info">
+                                    <h5>Succession Planning</h5>
+                                    <p>Leadership pipeline and talent development</p>
+                                </div>
+                                <div class="report-status ready">Ready</div>
+                            </div>
+                            <div class="report-card" onclick="generateReport('dei-metrics')">
+                                <div class="report-icon">🤝</div>
+                                <div class="report-info">
+                                    <h5>DEI Metrics</h5>
+                                    <p>Diversity, equity, and inclusion analysis</p>
+                                </div>
+                                <div class="report-status ready">Ready</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Executive Summary -->
+            <div id="executive-reports" class="report-section">
+                <h3>Executive Dashboard</h3>
+                <div class="executive-summary">
+                    <div class="summary-card">
+                        <h4>Performance Snapshot</h4>
+                        <div class="chart-container" style="position: relative; height: 250px;">
+                            <canvas id="executiveSummaryChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="summary-metrics">
+                        <div class="metric-card">
+                            <div class="metric-title">Overall Performance</div>
+                            <div class="metric-value">4.1/5</div>
+                            <div class="metric-change positive">+2.4% QoQ</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-title">Employee Satisfaction</div>
+                            <div class="metric-value">94%</div>
+                            <div class="metric-change positive">+1.8% QoQ</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-title">System ROI</div>
+                            <div class="metric-value">287%</div>
+                            <div class="metric-change positive">+15% YoY</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-title">Retention Rate</div>
+                            <div class="metric-value">96.8%</div>
+                            <div class="metric-change positive">+3.2% YoY</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Dashboard -->
+        <div id="admin-view" class="view-container">
+            <div class="dashboard-header">
+                <div class="header-left">
+                    <h2>System Administration</h2>
+                    <p>User management, system configuration, and analytics</p>
+                </div>
+                <div class="header-right">
+                    <button class="btn btn--outline" onclick="showSystemLogs()">System Logs</button>
+                    <button class="btn btn--primary" onclick="showUserManagement()">Manage Users</button>
+                </div>
+            </div>
+
+            <div class="admin-tabs">
+                <button class="admin-tab active" onclick="showAdminSection('users')">User Management</button>
+                <button class="admin-tab" onclick="showAdminSection('departments')">Departments</button>
+                <button class="admin-tab" onclick="showAdminSection('system')">System Settings</button>
+                <button class="admin-tab" onclick="showAdminSection('analytics')">Analytics</button>
+                <button class="admin-tab" onclick="showAdminSection('audit')">Audit Trail</button>
+            </div>
+
+            <!-- User Management Section -->
+            <div id="users-section" class="admin-section active">
+                <div class="section-header">
+                    <h3>User Management</h3>
+                    <div class="section-actions">
+                        <button class="btn btn--outline" onclick="exportUsers()">Export Users</button>
+                        <button class="btn btn--primary" onclick="addNewUser()">+ Add User</button>
+                    </div>
+                </div>
+
+                <div class="user-stats">
+                    <div class="stat-card">
+                        <div class="stat-title">Total Users</div>
+                        <div class="stat-value">63</div>
+                        <div class="stat-detail">5 pending activation</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">Active Sessions</div>
+                        <div class="stat-value">42</div>
+                        <div class="stat-detail">67% online rate</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">Role Distribution</div>
+                        <div class="role-breakdown">
+                            <div class="role-item">Admin: 3</div>
+                            <div class="role-item">Manager: 5</div>
+                            <div class="role-item">Employee: 55</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="user-table-container">
+                    <div class="table-controls">
+                        <div class="search-bar">
+                            <input type="text" class="form-control" placeholder="Search users..." id="userSearch">
+                        </div>
+                        <div class="filter-controls">
+                            <select class="form-control" id="departmentFilter">
+                                <option value="">All Departments</option>
+                                <option value="engineering">Engineering</option>
+                                <option value="marketing">Marketing</option>
+                                <option value="sales">Sales</option>
+                                <option value="design">Design</option>
+                                <option value="analytics">Analytics</option>
+                            </select>
+                            <select class="form-control" id="roleFilter">
+                                <option value="">All Roles</option>
+                                <option value="admin">Admin</option>
+                                <option value="manager">Manager</option>
+                                <option value="employee">Employee</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="user-table" id="userTable">
+                        <!-- User table will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Department Management Section -->
+            <div id="departments-section" class="admin-section">
+                <div class="section-header">
+                    <h3>Department Management</h3>
+                    <button class="btn btn--primary" onclick="addDepartment()">+ Add Department</button>
+                </div>
+
+                <div class="department-grid">
+                    <div class="department-card">
+                        <div class="dept-header">
+                            <h4>Engineering</h4>
+                            <div class="dept-actions">
+                                <button class="btn--sm btn--outline" onclick="editDepartment('eng')">Edit</button>
+                            </div>
+                        </div>
+                        <div class="dept-stats">
+                            <div class="stat-item">
+                                <span>Employees: 15</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>Manager: David Brown</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>Avg Performance: 4.2</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="department-card">
+                        <div class="dept-header">
+                            <h4>Marketing</h4>
+                            <div class="dept-actions">
+                                <button class="btn--sm btn--outline" onclick="editDepartment('mkt')">Edit</button>
+                            </div>
+                        </div>
+                        <div class="dept-stats">
+                            <div class="stat-item">
+                                <span>Employees: 12</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>Manager: Jennifer Davis</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>Avg Performance: 4.0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="department-card">
+                        <div class="dept-header">
+                            <h4>Sales</h4>
+                            <div class="dept-actions">
+                                <button class="btn--sm btn--outline" onclick="editDepartment('sales')">Edit</button>
+                            </div>
+                        </div>
+                        <div class="dept-stats">
+                            <div class="stat-item">
+                                <span>Employees: 18</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>Manager: Michael Johnson</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>Avg Performance: 4.1</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="department-card">
+                        <div class="dept-header">
+                            <h4>Design</h4>
+                            <div class="dept-actions">
+                                <button class="btn--sm btn--outline" onclick="editDepartment('design')">Edit</button>
+                            </div>
+                        </div>
+                        <div class="dept-stats">
+                            <div class="stat-item">
+                                <span>Employees: 8</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>Manager: Robert Wilson</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>Avg Performance: 4.3</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="department-card">
+                        <div class="dept-header">
+                            <h4>Data Analytics</h4>
+                            <div class="dept-actions">
+                                <button class="btn--sm btn--outline" onclick="editDepartment('analytics')">Edit</button>
+                            </div>
+                        </div>
+                        <div class="dept-stats">
+                            <div class="stat-item">
+                                <span>Employees: 10</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>Manager: Sarah Chen</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>Avg Performance: 3.9</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Settings Section -->
+            <div id="system-section" class="admin-section">
+                <div class="section-header">
+                    <h3>System Configuration</h3>
+                    <button class="btn btn--primary" onclick="saveSettings()">Save Changes</button>
+                </div>
+
+                <div class="settings-grid">
+                    <div class="settings-group">
+                        <h4>Evaluation Settings</h4>
+                        <div class="setting-item">
+                            <label class="form-label">Task Performance Weight (%)</label>
+                            <input type="number" class="form-control" value="50" min="0" max="100">
+                        </div>
+                        <div class="setting-item">
+                            <label class="form-label">Attitude Evaluation Weight (%)</label>
+                            <input type="number" class="form-control" value="50" min="0" max="100">
+                        </div>
+                        <div class="setting-item">
+                            <label class="form-label">Evaluation Frequency</label>
+                            <select class="form-control">
+                                <option value="monthly" selected>Monthly</option>
+                                <option value="quarterly">Quarterly</option>
+                                <option value="semi-annual">Semi-Annual</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <h4>Notification Settings</h4>
+                        <div class="setting-item">
+                            <label class="checkbox-label">
+                                <input type="checkbox" checked> Enable deadline alerts
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label class="checkbox-label">
+                                <input type="checkbox" checked> Send achievement celebrations
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label class="checkbox-label">
+                                <input type="checkbox" checked> Automated feedback prompts
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label class="form-label">Reminder Frequency (hours)</label>
+                            <input type="number" class="form-control" value="24" min="1" max="168">
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <h4>System Preferences</h4>
+                        <div class="setting-item">
+                            <label class="form-label">Company Name</label>
+                            <input type="text" class="form-control" value="TechCorp Industries">
+                        </div>
+                        <div class="setting-item">
+                            <label class="form-label">Time Zone</label>
+                            <select class="form-control">
+                                <option value="UTC-5">Eastern Time (UTC-5)</option>
+                                <option value="UTC-6">Central Time (UTC-6)</option>
+                                <option value="UTC-7">Mountain Time (UTC-7)</option>
+                                <option value="UTC-8">Pacific Time (UTC-8)</option>
+                            </select>
+                        </div>
+                        <div class="setting-item">
+                            <label class="form-label">Default Language</label>
+                            <select class="form-control">
+                                <option value="en" selected>English</option>
+                                <option value="es">Spanish</option>
+                                <option value="fr">French</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Section -->
+            <div id="analytics-section" class="admin-section">
+                <div class="section-header">
+                    <h3>System Analytics</h3>
+                    <div class="time-range-selector">
+                        <select class="form-control">
+                            <option value="week">Last 7 Days</option>
+                            <option value="month" selected>Last 30 Days</option>
+                            <option value="quarter">Last Quarter</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="analytics-grid">
+                    <div class="analytics-card">
+                        <h4>User Engagement</h4>
+                        <div class="chart-container" style="position: relative; height: 200px;">
+                            <canvas id="engagementChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="analytics-card">
+                        <h4>Feature Usage</h4>
+                        <div class="usage-stats">
+                            <div class="usage-item">
+                                <span>Task Management</span>
+                                <div class="usage-bar">
+                                    <div class="usage-fill" style="width: 95%"></div>
+                                </div>
+                                <span>95%</span>
+                            </div>
+                            <div class="usage-item">
+                                <span>Feedback System</span>
+                                <div class="usage-bar">
+                                    <div class="usage-fill" style="width: 87%"></div>
+                                </div>
+                                <span>87%</span>
+                            </div>
+                            <div class="usage-item">
+                                <span>Achievement System</span>
+                                <div class="usage-bar">
+                                    <div class="usage-fill" style="width: 73%"></div>
+                                </div>
+                                <span>73%</span>
+                            </div>
+                            <div class="usage-item">
+                                <span>Reports</span>
+                                <div class="usage-bar">
+                                    <div class="usage-fill" style="width: 68%"></div>
+                                </div>
+                                <span>68%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="analytics-card">
+                        <h4>Performance Trends</h4>
+                        <div class="chart-container" style="position: relative; height: 200px;">
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="analytics-card">
+                        <h4>System Health</h4>
+                        <div class="health-metrics">
+                            <div class="health-item">
+                                <div class="health-label">Uptime</div>
+                                <div class="health-value success">99.9%</div>
+                            </div>
+                            <div class="health-item">
+                                <div class="health-label">Response Time</div>
+                                <div class="health-value success">145ms</div>
+                            </div>
+                            <div class="health-item">
+                                <div class="health-label">Error Rate</div>
+                                <div class="health-value success">0.02%</div>
+                            </div>
+                            <div class="health-item">
+                                <div class="health-label">Storage Used</div>
+                                <div class="health-value warning">78%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Audit Trail Section -->
+            <div id="audit-section" class="admin-section">
+                <div class="section-header">
+                    <h3>Audit Trail</h3>
+                    <div class="audit-controls">
+                        <input type="date" class="form-control" id="auditDateFrom">
+                        <input type="date" class="form-control" id="auditDateTo">
+                        <button class="btn btn--outline" onclick="filterAuditLog()">Filter</button>
+                        <button class="btn btn--primary" onclick="exportAuditLog()">Export</button>
+                    </div>
+                </div>
+
+                <div class="audit-log" id="auditLog">
+                    <!-- Audit log entries will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Modals -->
+        
+        <!-- Task Assignment Modal -->
+        <div id="taskModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Assign New Task</h3>
+                    <button class="modal-close" onclick="closeModal('taskModal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">Task Title</label>
+                        <input type="text" class="form-control" id="taskTitle" placeholder="Enter task title">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" id="taskDescription" rows="3" placeholder="Describe the task"></textarea>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Assign To</label>
+                            <select class="form-control" id="taskAssignee">
+                                <option value="">Select employee</option>
+                                <option value="emp001">John Smith</option>
+                                <option value="emp002">Sarah Johnson</option>
+                                <option value="emp003">Mike Chen</option>
+                                <option value="emp004">Lisa Williams</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Priority</label>
+                            <select class="form-control" id="taskPriority">
+                                <option value="minimal">Minimal</option>
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                                <option value="critical">Critical</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Deadline</label>
+                        <input type="datetime-local" class="form-control" id="taskDeadline">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tags</label>
+                        <input type="text" class="form-control" id="taskTags" placeholder="Enter tags separated by commas">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn--outline" onclick="closeModal('taskModal')">Cancel</button>
+                    <button class="btn btn--primary" onclick="assignTask()">Assign Task</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Evaluation Modal -->
+        <div id="evaluationModal" class="modal hidden">
+            <div class="modal-content evaluation-modal">
+                <div class="modal-header">
+                    <h3>Monthly Attitude Evaluation</h3>
+                    <div class="evaluation-info">
+                        <span id="evaluationEmployee">John Smith</span> • <span id="evaluationPeriod">August 2025</span>
+                    </div>
+                    <button class="modal-close" onclick="closeModal('evaluationModal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="evaluation-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="evalProgressFill" style="width: 0%"></div>
+                        </div>
+                        <span class="progress-text" id="evalProgressText">0% Complete</span>
+                    </div>
+                    <div class="evaluation-content" id="evaluationContent">
+                        <!-- Evaluation sections will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn--outline" id="evalPrevBtn" onclick="previousEvalSection()" disabled>Previous</button>
+                    <button class="btn btn--primary" id="evalNextBtn" onclick="nextEvalSection()">Next</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Report Generation Modal -->
+        <div id="reportModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Generate Report</h3>
+                    <button class="modal-close" onclick="closeModal('reportModal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="report-preview" id="reportPreview">
+                        <!-- Report preview will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn--outline" onclick="closeModal('reportModal')">Close</button>
+                    <button class="btn btn--secondary" onclick="scheduleReport()">Schedule</button>
+                    <button class="btn btn--primary" onclick="downloadReport()">Download</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Management Modal -->
+        <div id="userModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="userModalTitle">Add New User</h3>
+                    <button class="modal-close" onclick="closeModal('userModal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="userFirstName">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="userLastName">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" id="userEmail">
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Department</label>
+                            <select class="form-control" id="userDepartment">
+                                <option value="">Select Department</option>
+                                <option value="engineering">Engineering</option>
+                                <option value="marketing">Marketing</option>
+                                <option value="sales">Sales</option>
+                                <option value="design">Design</option>
+                                <option value="analytics">Analytics</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Role</label>
+                            <select class="form-control" id="userRole">
+                                <option value="employee">Employee</option>
+                                <option value="manager">Manager</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Position</label>
+                        <input type="text" class="form-control" id="userPosition">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Manager</label>
+                        <select class="form-control" id="userManager">
+                            <option value="">Select Manager</option>
+                            <option value="mgr001">David Brown</option>
+                            <option value="mgr002">Jennifer Davis</option>
+                            <option value="mgr003">Michael Johnson</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn--outline" onclick="closeModal('userModal')">Cancel</button>
+                    <button class="btn btn--primary" onclick="saveUser()">Save User</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Achievement Celebration Modal -->
+        <div id="achievementModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>🎉 Achievement Unlocked!</h3>
+                    <button class="modal-close" onclick="closeModal('achievementModal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="achievement-celebration" id="achievementContent">
+                        <!-- Achievement content will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn--primary btn--full-width" onclick="closeModal('achievementModal')">Awesome!</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions Dropdown -->
+        <div id="quickActionsDropdown" class="dropdown-menu quick-actions-menu hidden">
+            <div class="dropdown-header">
+                <h4>Quick Actions</h4>
+            </div>
+            <div class="action-grid">
+                <button class="quick-action-btn" onclick="showTaskModal()">
+                    <span class="action-icon">➕</span>
+                    <span>Assign Task</span>
+                </button>
+                <button class="quick-action-btn" onclick="startEvaluation()">
+                    <span class="action-icon">📋</span>
+                    <span>Start Evaluation</span>
+                </button>
+                <button class="quick-action-btn" onclick="sendFeedback()">
+                    <span class="action-icon">💬</span>
+                    <span>Send Feedback</span>
+                </button>
+                <button class="quick-action-btn" onclick="generateReport('quick')">
+                    <span class="action-icon">📊</span>
+                    <span>Generate Report</span>
+                </button>
+                <button class="quick-action-btn" onclick="viewCalendar()">
+                    <span class="action-icon">📅</span>
+                    <span>View Calendar</span>
+                </button>
+                <button class="quick-action-btn" onclick="exportData()">
+                    <span class="action-icon">📤</span>
+                    <span>Export Data</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
