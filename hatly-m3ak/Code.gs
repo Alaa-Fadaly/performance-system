@@ -13,7 +13,7 @@ var SCHEMA_ = {
   Menu:   ['id', 'vendor', 'category', 'name', 'price', 'emoji', 'active', 'desc'],
   Orders: ['id', 'date', 'vendor', 'status', 'fee', 'createdAt', 'round'],
   Lines:  ['id', 'orderId', 'userId', 'userName', 'floor', 'office', 'item', 'qty',
-           'estPrice', 'actualPrice', 'note', 'paid', 'createdAt', 'cat', 'bread'],
+           'estPrice', 'actualPrice', 'note', 'paid', 'createdAt', 'cat', 'bread', 'na'],
   Receipts: ['id', 'orderId', 'createdAt', 'data']
 };
 
@@ -236,6 +236,8 @@ function checkVendor_(v) {
   if (VENDORS_.indexOf(v) < 0) throw new Error('المحل مش معروف');
 }
 
+function isNa_(l) { return num_(l.na) > 0; }
+
 function roundOf_(o) { return num_(o.round) || 1; }
 
 function todayOrders_(vendor) {
@@ -289,6 +291,8 @@ function getState(userId, pin) {
   var orders = read_('Orders').filter(function (o) { return dateStr_(o.date) === today; });
   var lines = read_('Lines');
   var receipts = read_('Receipts');
+  var phones = {};
+  if (isC) read_('Users').forEach(function (u) { phones[u.id] = str_(u.phone); });
   var myKey = userId ? ukey_(userId) : '';
   var out = {};
   VENDORS_.forEach(function (v) {
@@ -298,7 +302,7 @@ function getState(userId, pin) {
         return {
           round: roundOf_(o), status: o.status, fee: num_(o.fee),
           receipts: isC ? receipts.filter(function (r) { return r.orderId === o.id; }).map(receiptOut_) : [],
-          people: Object.keys(lines.filter(function (l) { return l.orderId === o.id; }).reduce(function (a, l) { a[l.userId] = 1; return a; }, {})).length,
+          people: Object.keys(lines.filter(function (l) { return l.orderId === o.id && !isNa_(l); }).reduce(function (a, l) { a[l.userId] = 1; return a; }, {})).length,
           lines: lines.filter(function (l) { return l.orderId === o.id && (isC || (userId && l.userId === userId)); }).map(function (l) {
             var uk = ukey_(l.userId);
             return {
@@ -306,7 +310,8 @@ function getState(userId, pin) {
               floor: num_(l.floor), office: str_(l.office), item: l.item, qty: num_(l.qty),
               estPrice: num_(l.estPrice),
               actualPrice: str_(l.actualPrice) === '' ? null : num_(l.actualPrice),
-              note: str_(l.note), paid: str_(l.paid) === '1', cat: str_(l.cat), bread: str_(l.bread)
+              note: str_(l.note), paid: str_(l.paid) === '1', cat: str_(l.cat), bread: str_(l.bread),
+              na: num_(l.na), phone: isC ? (phones[l.userId] || '') : ''
             };
           })
         };
@@ -414,7 +419,7 @@ function deleteLine(userId, lineId) {
     var l = read_('Lines').filter(function (x) { return x.id === lineId; })[0];
     if (!l || l.userId !== userId) throw new Error('الصنف مش موجود');
     var o = read_('Orders').filter(function (x) { return x.id === l.orderId; })[0];
-    if (o && o.status !== 'open') throw new Error('الأوردر اتقفل');
+    if (o && o.status !== 'open' && !isNa_(l)) throw new Error('الأوردر اتقفل');
     getDb_().getSheetByName('Lines').deleteRow(l._r);
     return true;
   });
@@ -451,6 +456,7 @@ function courierStats(pin, days) {
   var t = { spend: 0, fees: 0, rounds: 0, qty: 0 };
   Object.keys(byOrder).forEach(function (oid) {
     var o = orders[oid], date = dateStr_(o.date), ls = byOrder[oid], fee = num_(o.fee), users = {};
+    ls = ls.filter(function (l) { return !isNa_(l); });
     ls.forEach(function (l) {
       var price = str_(l.actualPrice) === '' ? num_(l.estPrice) : num_(l.actualPrice);
       var u = users[l.userId] || (users[l.userId] = { sub: 0, paid: true, l: l });
@@ -504,6 +510,70 @@ function courierStats(pin, days) {
     unpaid: unpaidList,
     unpaidTotal: round2(unpaidList.reduce(function (a, x) { return a + x.amount; }, 0))
   };
+}
+
+/* ------------------------- صنف مش موجود + تبليغ الموظف ------------------------- */
+
+function courierSetUnavailable(pin, vendor, round, item, flag) {
+  checkPin_(pin);
+  return withLock_(function () {
+    checkVendor_(vendor);
+    var o = getOrCreateOrder_(vendor, round), key = norm_(item);
+    var sh = getDb_().getSheetByName('Lines'), h = SCHEMA_.Lines, last = sh.getLastRow();
+    if (last < 2) return true;
+    var rng = sh.getRange(2, 1, last - 1, h.length), vals = rng.getValues();
+    var iO = h.indexOf('orderId'), iI = h.indexOf('item'), iN = h.indexOf('na');
+    vals.forEach(function (r) { if (r[iO] === o.id && norm_(r[iI]) === key) r[iN] = flag ? 1 : ''; });
+    rng.setValues(vals);
+    return true;
+  });
+}
+
+function linesByIds_(ids) {
+  var set = {};
+  (ids || []).forEach(function (i) { set[i] = true; });
+  return read_('Lines').filter(function (l) { return set[l.id]; });
+}
+
+function courierNotified(pin, ids) {
+  checkPin_(pin);
+  return withLock_(function () {
+    linesByIds_(ids).forEach(function (l) { if (isNa_(l)) { l.na = 2; save_('Lines', l); } });
+    return true;
+  });
+}
+
+function courierRemoveLines(pin, ids) {
+  checkPin_(pin);
+  return withLock_(function () {
+    var sh = getDb_().getSheetByName('Lines');
+    linesByIds_(ids).sort(function (a, b) { return b._r - a._r; }).forEach(function (l) { sh.deleteRow(l._r); });
+    return true;
+  });
+}
+
+// تبديل صنف مش موجود بصنف تاني لنفس الموظف
+function courierReplaceLines(pin, ids, newItem, price) {
+  checkPin_(pin);
+  return withLock_(function () {
+    var name = norm_(newItem).slice(0, 60);
+    if (!name) throw new Error('اكتب اسم الصنف البديل');
+    var ls = linesByIds_(ids);
+    if (!ls.length) throw new Error('الطلب مش موجود');
+    var orders = {};
+    read_('Orders').forEach(function (o) { orders[o.id] = o; });
+    var menu = read_('Menu');
+    ls.forEach(function (l) {
+      var vendor = orders[l.orderId] ? orders[l.orderId].vendor : 'foul';
+      var hit = menu.filter(function (m) { return m.vendor === vendor && norm_(m.name) === name && str_(m.active) !== '0'; })[0];
+      var p = hit ? num_(hit.price) : Math.max(0, num_(price));
+      l.item = name; l.estPrice = p; l.actualPrice = ''; l.na = '';
+      l.cat = hit ? str_(hit.category) : 'إضافات الزملاء';
+      save_('Lines', l);
+      addToMenuIfNew_(menu, vendor, name, p);
+    });
+    return true;
+  });
 }
 
 function courierSetStatus(pin, vendor, status, round) {
@@ -669,7 +739,7 @@ function courierScanReceipt(pin, vendor, round, b64, mime) {
   mime = ['image/jpeg', 'image/png', 'image/webp'].indexOf(mime) >= 0 ? mime : 'image/jpeg';
   var order = getOrCreateOrder_(vendor, round);
   var names = {};
-  read_('Lines').forEach(function (l) { if (l.orderId === order.id) names[norm_(l.item)] = true; });
+  read_('Lines').forEach(function (l) { if (l.orderId === order.id && !isNa_(l)) names[norm_(l.item)] = true; });
   var itemNames = Object.keys(names);
   if (!itemNames.length) throw new Error('مفيش طلبات في الجولة دي');
   var data = normalizeReceipt_(callClaudeReceipt_(b64, mime, itemNames), itemNames);

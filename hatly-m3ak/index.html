@@ -178,6 +178,11 @@ summary::-webkit-details-marker{display:none}
 details[open] summary{border-radius:var(--r) var(--r) 0 0;box-shadow:none}
 details .inner{background:#fff;padding:0 14px 14px;border-radius:0 0 var(--r) var(--r);box-shadow:var(--shadow)}
 .hide{display:none!important}
+.row.na{background:#FFF1F4;border-radius:14px;padding-inline:8px;margin:4px 0}
+.row.na .nm{text-decoration:line-through;color:#8a1c3c}
+.nabox{background:#FFF1F4;border:2px dashed #d6245a;border-radius:14px;padding:8px 10px;margin-top:8px}
+.nabox .pr{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:5px 0}
+.nabox .pr b{font-size:13.5px}
 .tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:14px 0}
 .tile{border-radius:20px;padding:12px;font-weight:800;font-size:13px;box-shadow:var(--shadow)}
 .tile b{display:block;font-size:24px;font-weight:900;line-height:1.2}
@@ -413,20 +418,21 @@ function unitPrice(l){ return l.actualPrice != null ? l.actualPrice : l.estPrice
 function viewGroup(){
   const v = S.vendor, o = ord(v), multi = rounds(v).length > 1;
   const mine = rounds(v).flatMap(r => r.lines.filter(l => l.mine).map(l => ({ ...l, rd: r.round, open: r.status === 'open' })));
-  const myTotal = mine.reduce((a,l) => a + l.qty * unitPrice(l), 0);
-  const est = mine.some(l => l.actualPrice == null);
-  const fee = rounds(v).reduce((a, r) => a + (r.fee > 0 && r.lines.some(l => l.mine) ? r.fee / (r.people || 1) : 0), 0);
+  const myTotal = mine.filter(l => !l.na).reduce((a,l) => a + l.qty * unitPrice(l), 0);
+  const est = mine.some(l => !l.na && l.actualPrice == null);
+  const fee = rounds(v).reduce((a, r) => a + (r.fee > 0 && r.lines.some(l => l.mine && !l.na) ? r.fee / (r.people || 1) : 0), 0);
   let html = vendorChips() + banner(v);
 
   html += `<div class="card"><h2>🙋 طلباتي <span class="cnt">${mine.length}</span></h2>`;
   if (!mine.length) html += `<div class="empty"><span class="e">🍽️</span>لسه مطلبتش حاجة من ${VENDORS[v].short}</div>`;
   else {
-    html += mine.map(l => `<div class="row"><div class="qty">${l.qty}</div>
+    html += mine.map(l => `<div class="row ${l.na?'na':''}"><div class="qty" ${l.na?'style="background:#d6245a"':''}>${l.qty}</div>
       <div><div class="nm">${esc(dispName(l.item, catOf(l)))}</div>${l.bread?`<div class="sub">${breadTxt(l.bread)}</div>`:''}${multi?`<div class="sub">الجولة ${l.rd}</div>`:''}${l.note?`<div class="sub">📝 ${esc(l.note)}</div>`:''}</div>
-      <div class="end">${fmt(l.qty*unitPrice(l))}${l.open?`<button class="x" data-act="del" data-id="${esc(l.id)}">✕</button>`:''}</div></div>`).join('');
+      <div class="end">${l.na ? '<span class="badge-miss">❌ مش موجود</span>' : fmt(l.qty*unitPrice(l))}${(l.open || l.na)?`<button class="x" data-act="del" data-id="${esc(l.id)}">✕</button>`:''}</div></div>`).join('');
     html += `<div class="total"><span>حسابي ${est?'<span class="pill est">تقديري</span>':'<span class="pill ok">نهائي</span>'}</span><span>${fmt(myTotal + fee)}</span></div>`;
     if (fee) html += `<div class="sub" style="margin-top:6px;font-weight:600;color:var(--muted)">شامل ${fmt(fee)} نصيبك من التوصيل 🛵</div>`;
   }
+  if (mine.some(l => l.na)) html += `<div class="alert bad" style="margin-top:12px">❌ فيه صنف مش موجود عند مسئول التوصيل. هيبلغك، ولو عايز تلغيه دوس ✕.</div>`;
   html += '</div>';
 
   return html;
@@ -446,15 +452,18 @@ const dispName = (item, cat) => (isSand(cat, item) && !/س[اَ]?ندوتش/.tes
 const lastBread = () => load('hm_bread') || 'بلدي';
 const breadSum = g => Object.keys(g.breads || {}).filter(Boolean).map(b => `${b} ${g.breads[b]}`).join('، ');
 
+const liveLines = o => o.lines.filter(l => !l.na);
+
 function groupByItem(lines){
   const map = new Map();
   lines.forEach(l => {
     const k = normKey(l.item);
-    if (!map.has(k)) map.set(k, { item:l.item, qty:0, people:[], breads:{}, cat: catOf(l) });
-    const g = map.get(k); g.qty += l.qty;
-    const bd = l.bread || ''; g.breads[bd] = (g.breads[bd] || 0) + l.qty;
-    const p = g.people.find(x => x.uk === l.uk && x.note === l.note && x.bread === bd);
-    if (p) p.qty += l.qty; else g.people.push({ uk:l.uk, name:l.name, floor:l.floor, office:l.office, qty:l.qty, note:l.note, bread:bd, mine:l.mine });
+    if (!map.has(k)) map.set(k, { item:l.item, qty:0, naQty:0, people:[], breads:{}, cat: catOf(l) });
+    const g = map.get(k), bd = l.bread || '', na = l.na || 0;
+    if (na) g.naQty += l.qty; else { g.qty += l.qty; g.breads[bd] = (g.breads[bd] || 0) + l.qty; }
+    const p = g.people.find(x => x.uk === l.uk && x.note === l.note && x.bread === bd && !!x.na === !!na && x.na === na);
+    if (p) { p.qty += l.qty; p.ids.push(l.id); }
+    else g.people.push({ uk:l.uk, name:l.name, floor:l.floor, office:l.office, qty:l.qty, note:l.note, bread:bd, mine:l.mine, na, ids:[l.id], phone:l.phone || '' });
   });
   return [...map.values()];
 }
@@ -469,7 +478,7 @@ function viewCourier(){
   if (S.cTab === 'stats') return cSubnav() + statsView();
   const v = S.vendor, o = cv(v), st = o.status, order = ['open','closed','done'], isLast = o.round === ord(v).round;
   const prices = vendorPrices(v);
-  const items = groupByItem(o.lines);
+  const items = groupByItem(o.lines), hasLive = liveLines(o).length > 0;
   const sorted = billList(v);
   let html = cSubnav() + vendorChips() + roundsBar(v) + `<div class="steps">${[['open','1️⃣ مفتوح'],['closed','2️⃣ بطلب'],['done','3️⃣ جبته']].map(([k,t]) =>
     `<div class="stp ${k===st?'on':order.indexOf(k)<order.indexOf(st)?'past':''}">${t}</div>`).join('')}</div>`;
@@ -481,18 +490,15 @@ function viewCourier(){
     `<button class="btn o sm" data-act="reload">🔄 تحديث</button></div>`;
 
   html += `<div class="card"><h2>📋 اللي هتطلبه <span class="cnt">${items.reduce((a,g)=>a+g.qty,0)}</span>
-    ${items.length?`<button class="btn sm y" style="margin-inline-start:6px" data-act="copyList">نسخ</button>`:''}</h2>`;
+    ${hasLive?`<button class="btn sm y" style="margin-inline-start:6px" data-act="copyList">نسخ</button>`:''}</h2>`;
   if (!items.length) html += `<div class="empty"><span class="e">🦗</span>لسه مفيش طلبات</div>`;
   else html += [['sand','🥙 سندوتشات','#FFE9A8'],['other','🍽️ أطباق وطلبات تانية','#D6E4FF']].map(([k,t,c]) => {
     const gs = items.filter(g => kindOf(g) === k); if (!gs.length) return '';
-    return `<div class="kind" style="background:${c}">${t}<span>${gs.reduce((a,g)=>a+g.qty,0)}</span></div>` + gs.map(g =>
-      `<div class="row" style="align-items:flex-start"><div class="qty">${g.qty}</div><div style="flex:1">
-      <div class="nm">${esc(dispName(g.item, g.cat))}${breadSum(g)?` <span class="tag" style="background:#FFE9A8;color:#6b4a00">${breadSum(g)}</span>`:''}</div><div class="chips">${g.people.map(p =>
-      `<span class="chip">${esc(p.name)} ×${p.qty}${p.bread?` ${breadTxt(p.bread)}`:''}${p.note?` <small>(${esc(p.note)})</small>`:''}</span>`).join('')}</div></div></div>`).join('');
+    return `<div class="kind" style="background:${c}">${t}<span>${gs.reduce((a,g)=>a+g.qty,0)}</span></div>` + gs.map(g => itemRow(g)).join('');
   }).join('');
   html += '</div>';
 
-  if (items.length) {
+  if (hasLive) {
     html += receiptCard(v);
     html += `<div class="card ptable"><h2>💰 الأسعار الفعلية</h2><p class="hint" style="margin:-4px 0 6px;color:var(--muted);font-weight:600;font-size:13px">اكتب سعر الوحدة اللي دفعته وهيتحسب لكل واحد</p>`;
     const rs = receiptStats(v);
@@ -508,6 +514,40 @@ function viewCourier(){
   html += `<details><summary>🍽️ إدارة المنيو</summary><div class="inner">${menuAdmin(v)}</div></details>
     <div class="btns" style="justify-content:center"><button class="btn o sm" data-act="logout">خروج من منطقة مسئول التوصيل</button></div>`;
   return html;
+}
+
+function itemRow(g){
+  const live = g.people.filter(p => !p.na), nas = g.people.filter(p => p.na), allNa = !live.length && nas.length;
+  return `<div class="row ${allNa?'na':''}" style="align-items:flex-start"><div class="qty" ${allNa?'style="background:#d6245a"':''}>${allNa ? g.naQty : g.qty}</div><div style="flex:1">
+    <div class="nm">${esc(dispName(g.item, g.cat))}${breadSum(g)?` <span class="tag" style="background:#FFE9A8;color:#6b4a00">${breadSum(g)}</span>`:''}${nas.length?' <span class="badge-miss">❌ مش موجود</span>':''}</div>
+    <div class="chips">${live.map(p => `<span class="chip">${esc(p.name)} ×${p.qty}${p.bread?` ${breadTxt(p.bread)}`:''}${p.note?` <small>(${esc(p.note)})</small>`:''}</span>`).join('')}</div>
+    ${nas.length ? `<div class="nabox">${nas.map(p => `<div class="pr"><b>${esc(p.name)} ×${p.qty}</b><span class="sub">${floorLabel(p.floor)}/${esc(p.office)}${p.na === 2 ? ' · اتبلّغ ✅' : ''}</span>
+        <button class="btn sm g" data-act="waNotify" data-ids="${p.ids.join(',')}" data-name="${esc(p.name)}" data-item="${esc(dispName(g.item, g.cat))}" data-phone="${esc(p.phone)}">💬 بلّغه واتساب</button>
+        <button class="btn sm y" data-act="replace" data-ids="${p.ids.join(',')}" data-name="${esc(p.name)}" data-item="${esc(g.item)}">🔁 بدّل</button>
+        <button class="btn sm r" data-act="cancelNa" data-ids="${p.ids.join(',')}">🗑️ إلغاء</button></div>`).join('')}</div>` : ''}
+    <div class="btns" style="margin-top:6px">${allNa
+      ? `<button class="btn sm o" data-act="na" data-k="${esc(g.item)}" data-v="0">↩️ طلع موجود</button>`
+      : `<button class="btn sm o" data-act="na" data-k="${esc(g.item)}" data-v="1">🚫 مش موجود</button>`}</div></div></div>`;
+}
+
+const waNum = ph => {
+  let n = String(ph || '').replace(/\D/g, '');
+  if (n.startsWith('00')) n = n.slice(2);
+  if (n.startsWith('0')) n = '2' + n;
+  else if (n.length === 10 && n.startsWith('1')) n = '20' + n;
+  return n;
+};
+function waLink(phone, name, item){
+  const shop = S.vendor === 'foul' ? 'المطعم' : 'السوبرماركت';
+  const msg = `أهلاً ${name} 👋\nأنا مسئول التوصيل في «هاتلى معاك» 🛵\nللأسف *${item}* مش موجود النهاردة في ${shop} 😕\nتحب أجيبلك حاجة تانية بداله ولا ألغيه؟ ردّ عليا 🙏`;
+  return `https://wa.me/${waNum(phone)}?text=${encodeURIComponent(msg)}`;
+}
+function replaceSheet(ids, name, item){
+  const names = S.menu.filter(m => m.vendor === S.vendor).map(m => m.name);
+  openSheet(`<h2>🔁 بدّل لـ ${esc(name)}</h2><p class="hint">بدل «${esc(item)}» بصنف تاني (اتفقت معاه)</p>
+    <label>الصنف البديل</label><input id="r_name" list="rnames" maxlength="60" placeholder="اختار أو اكتب"><datalist id="rnames">${names.map(n => `<option value="${esc(n)}">`).join('')}</datalist>
+    <label>السعر التقريبي (لو الصنف مش في المنيو)</label><input id="r_price" type="number" min="0" step="0.5">
+    <div class="btns"><button class="btn g full" data-act="doReplace" data-ids="${esc(ids)}">✅ بدّل</button></div>`, true);
 }
 
 function cSubnav(){
@@ -570,7 +610,7 @@ function receiptStats(v){
     if (l.match) { const k = normKey(l.match); bought[k] = (bought[k] || 0) + l.qty; }
     else extra.push(l);
   }));
-  const missing = groupByItem(o.lines).map(g => ({ item: dispName(g.item, g.cat), need: g.qty - (bought[normKey(g.item)] || 0) })).filter(x => x.need > 0);
+  const missing = groupByItem(liveLines(o)).map(g => ({ item: dispName(g.item, g.cat), need: g.qty - (bought[normKey(g.item)] || 0) })).filter(x => x.need > 0);
   return { has: (o.receipts || []).length > 0, bought, missing, extra };
 }
 
@@ -629,7 +669,7 @@ function roundsBar(v){
 
 function vendorPrices(v){
   const map = new Map();
-  cv(v).lines.forEach(l => {
+  liveLines(cv(v)).forEach(l => {
     const k = normKey(l.item);
     if (!map.has(k)) map.set(k, { key:k, item:l.item, qty:0, base:null, cat: catOf(l) });
     const e = map.get(k); e.qty += l.qty;
@@ -645,7 +685,7 @@ function effPrice(v, l){
 }
 function billList(v){
   const o = cv(v), by = new Map();
-  o.lines.forEach(l => {
+  liveLines(o).forEach(l => {
     if (!by.has(l.uk)) by.set(l.uk, { uk:l.uk, name:l.name, floor:l.floor, office:l.office, lines:[], paid:true });
     const b = by.get(l.uk); b.lines.push(l); if (!l.paid) b.paid = false;
   });
@@ -790,6 +830,16 @@ document.addEventListener('click', async e => {
       case 'delReceipt': if (confirm('تمسح الريسيت ده من المراجعة؟ (الأسعار اللي اتحدثت هتفضل)')) { await courier('courierDeleteReceipt', d.id); await refresh(true); } break;
       case 'ctab': S.cTab = d.v; if (d.v === 'stats') loadStats(); else render(); break;
       case 'sdays': S.stats.days = +d.v; loadStats(); break;
+      case 'na': await courier('courierSetUnavailable', S.vendor, cv(S.vendor).round, d.k, d.v === '1'); await refresh(true); break;
+      case 'waNotify': {
+        window.open(waLink(d.phone, d.name, d.item), '_blank');
+        if (!d.phone) toast('مفيش رقم للموظف، اختار منه من واتساب');
+        await courier('courierNotified', d.ids.split(',')); await refresh(true); break;
+      }
+      case 'replace': replaceSheet(d.ids, d.name, d.item); break;
+      case 'doReplace': { const nm = $('#r_name').value.trim(); if (!nm) return toast('اكتب الصنف البديل', true);
+        await courier('courierReplaceLines', d.ids.split(','), nm, $('#r_price').value); closeSheet(); toast('اتبدّل ✅'); await refresh(true); break; }
+      case 'cancelNa': if (confirm('تلغي الصنف ده من طلب الموظف؟')) { await courier('courierRemoveLines', d.ids.split(',')); await refresh(true); } break;
       case 'vround': S.vr[S.vendor] = +d.v; render(); break;
       case 'newRound': await courier('courierNewRound', S.vendor); S.vr[S.vendor] = null; toast('بدأت جولة جديدة 🟢'); await refresh(true); break;
       case 'status': if (d.v === 'done') { const m = receiptStats(S.vendor); if (m.has && m.missing.length && !confirm('لسه فيه حاجات ناقصة: ' + m.missing.map(x => x.item + ' ×' + x.need).join('، ') + '\nتكمل برضو؟')) break; }
@@ -834,7 +884,7 @@ async function savePrices(){
 
 function listText(){
   const v = S.vendor;
-  const gs = groupByItem(cv(v).lines);
+  const gs = groupByItem(liveLines(cv(v)));
   const sec = (k, t) => { const a = gs.filter(g => kindOf(g) === k); return a.length ? `\n${t}:\n` + a.map(g => `• ${dispName(g.item, g.cat)} × ${g.qty}${breadSum(g) ? ' (' + breadSum(g) + ')' : ''}`).join('\n') : ''; };
   return `طلب ${VENDORS[v].name}${rounds(v).length>1?' (جولة '+cv(v).round+')':''}:` + sec('sand', '🥙 سندوتشات') + sec('other', '🍽️ أطباق وطلبات تانية');
 }
