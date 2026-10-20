@@ -13,7 +13,7 @@ var SCHEMA_ = {
   Menu:   ['id', 'vendor', 'category', 'name', 'price', 'emoji', 'active', 'desc'],
   Orders: ['id', 'date', 'vendor', 'status', 'fee', 'createdAt', 'round'],
   Lines:  ['id', 'orderId', 'userId', 'userName', 'floor', 'office', 'item', 'qty',
-           'estPrice', 'actualPrice', 'note', 'paid', 'createdAt', 'cat'],
+           'estPrice', 'actualPrice', 'note', 'paid', 'createdAt', 'cat', 'bread'],
   Receipts: ['id', 'orderId', 'createdAt', 'data']
 };
 
@@ -299,7 +299,7 @@ function getState(userId) {
               floor: num_(l.floor), office: str_(l.office), item: l.item, qty: num_(l.qty),
               estPrice: num_(l.estPrice),
               actualPrice: str_(l.actualPrice) === '' ? null : num_(l.actualPrice),
-              note: str_(l.note), paid: str_(l.paid) === '1', cat: str_(l.cat)
+              note: str_(l.note), paid: str_(l.paid) === '1', cat: str_(l.cat), bread: str_(l.bread)
             };
           })
         };
@@ -359,6 +359,7 @@ function addLines(profile, vendor, items) {
       var hit = menuNow.filter(function (m) { return m.vendor === vendor && norm_(m.name) === item; })[0];
       append_('Lines', {
         cat: hit ? str_(hit.category) : 'إضافات الزملاء',
+        bread: ['بلدي', 'شامي'].indexOf(norm_(it.bread)) >= 0 ? norm_(it.bread) : '',
         id: newId_('l_'), orderId: order.id, userId: p.id, userName: p.name,
         floor: p.floor, office: p.office, item: item, qty: qty,
         estPrice: Math.max(0, num_(it.estPrice)), actualPrice: '',
@@ -394,7 +395,7 @@ function getHistory(userId) {
     var key = date + '|' + o.vendor + '|' + roundOf_(o);
     var g = groups[key] || (groups[key] = { date: date, vendor: o.vendor, round: roundOf_(o), items: [], total: 0 });
     var price = str_(l.actualPrice) === '' ? num_(l.estPrice) : num_(l.actualPrice);
-    g.items.push({ item: l.item, qty: num_(l.qty), note: str_(l.note), price: price });
+    g.items.push({ item: l.item, qty: num_(l.qty), note: str_(l.note), price: price, cat: str_(l.cat), bread: str_(l.bread) });
     g.total += num_(l.qty) * price;
   });
   return Object.keys(groups).map(function (k) { return groups[k]; })

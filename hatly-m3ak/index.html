@@ -305,7 +305,7 @@ function banner(v){
 }
 
 /* ---------- اطلب ---------- */
-function cartQty(id){ const c = S.cart.find(x => x.key === id); return c ? c.qty : 0; }
+function cartQty(id){ return S.cart.filter(x => x.mid === id).reduce((a, c) => a + c.qty, 0); }
 
 function viewOrder(){
   const v = S.vendor, items = S.menu.filter(m => m.vendor === v);
@@ -318,7 +318,7 @@ function viewOrder(){
     cats.map(c => `<button class="cat ${S.cat===c?'on':''}" data-act="cat" data-v="${esc(c)}">${esc(c)}</button>`).join('') + '</div>' +
     `<div class="grid ${closed?'disabled':''}">` +
     shown.map((m,i) => {
-      const q = cartQty('m:'+m.id);
+      const q = cartQty(m.id);
       return `<div class="item ${q?'has':''}">
         <div class="bub" style="background:${BUBBLES[i%BUBBLES.length]}">${esc(m.emoji)}</div>
         <h3>${esc(m.name)}</h3>${m.desc?`<div class="desc">${esc(m.desc)}</div>`:''}<div class="price">${fmt(m.price)}</div>
@@ -345,7 +345,7 @@ function suggestion(){
   return `<div class="card" style="background:linear-gradient(135deg,#FFF0B8,#FFD3E1);border:3px solid var(--ink)">
     <h2>${hello}${esc(S.me.name)}</h2>
     <p style="margin:0 0 8px;font-weight:700">${VENDORS[S.vendor].emoji} تحب نفس طلب <b>${dayLabel(h.date)}</b>؟</p>
-    <div class="chips" style="margin:0 0 6px">${h.items.map(i => `<span class="chip" style="background:#fff">${i.qty} × ${esc(i.item)}</span>`).join('')}</div>
+    <div class="chips" style="margin:0 0 6px">${h.items.map(i => `<span class="chip" style="background:#fff">${i.qty} × ${esc(dispName(i.item, i.cat))}${i.bread?' '+breadTxt(i.bread):''}</span>`).join('')}</div>
     <div class="sub" style="font-weight:700;color:var(--muted)">حوالي ${fmt(h.total)}</div>
     <div class="btns"><button class="btn g" data-act="reorder" data-i="${S.hist.indexOf(h)}">آه، زي ${dayLabel(h.date)} 👍</button>
     <button class="btn o" data-act="skipSuggest">لأ، هختار 🙅</button></div></div>`;
@@ -357,8 +357,10 @@ function reorder(h){
   S.vendor = h.vendor; S.cat = 'all'; S.tab = 'order';
   S.cart = h.items.map((i, k) => {
     const m = S.menu.find(x => x.vendor === h.vendor && normKey(x.name) === normKey(i.item));
-    return { key: m ? 'm:' + m.id : 'c:r' + k, item: i.item, emoji: m ? m.emoji : '✍️', qty: i.qty,
-             estPrice: m ? m.price : i.price, note: i.note, vendor: h.vendor };
+    const cat = m ? m.category : (i.cat || '');
+    return { key: 'r:' + k + ':' + Date.now(), mid: m ? m.id : null, item: i.item, emoji: m ? m.emoji : '✍️', qty: i.qty,
+             estPrice: m ? m.price : i.price, note: i.note, vendor: h.vendor, cat,
+             bread: isSand(cat, i.item) ? (i.bread || lastBread()) : '' };
   });
   render(); reviewSheet();
 }
@@ -371,7 +373,7 @@ function viewHist(){
   if (!S.hist.length) return html + '<div class="empty"><span class="e">🍽️</span>لسه مفيش طلبات في السجل</div>';
   return html + S.hist.map((h, i) => `<div class="card"><h2>${VENDORS[h.vendor] ? VENDORS[h.vendor].emoji : '🛍️'} ${dayLabel(h.date)}${S.hist.filter(x => x.date === h.date && x.vendor === h.vendor).length > 1 ? ' · جولة ' + h.round : ''}
       <span class="cnt" style="background:#E6E0FF">${h.date}</span></h2>
-    ${h.items.map(it => `<div class="row"><div class="qty">${it.qty}</div><div><div class="nm">${esc(it.item)}</div>${it.note ? `<div class="sub">📝 ${esc(it.note)}</div>` : ''}</div>
+    ${h.items.map(it => `<div class="row"><div class="qty">${it.qty}</div><div><div class="nm">${esc(dispName(it.item, it.cat))}</div>${it.bread ? `<div class="sub">${breadTxt(it.bread)}</div>` : ''}${it.note ? `<div class="sub">📝 ${esc(it.note)}</div>` : ''}</div>
       <div class="end">${fmt(it.qty * it.price)}</div></div>`).join('')}
     <div class="total"><span>الإجمالي</span><span>${fmt(h.total)}</span></div>
     ${h.date < S.today ? `<div class="btns"><button class="btn y full" data-act="reorder" data-i="${i}">🔁 اطلبه تاني</button></div>` : ''}</div>`).join('');
@@ -386,8 +388,8 @@ function renderCartBar(){
 
 function changeCart(id, d){
   const m = S.menu.find(x => x.id === id); if (!m) return;
-  let c = S.cart.find(x => x.key === 'm:' + id);
-  if (!c) { if (d < 0) return; c = { key:'m:'+id, item:m.name, emoji:m.emoji, qty:0, estPrice:m.price, note:'', vendor:m.vendor }; S.cart.push(c); }
+  let c = [...S.cart].reverse().find(x => x.mid === id);
+  if (!c) { if (d < 0) return; c = { key:'m:'+id+':'+Date.now(), mid:id, item:m.name, emoji:m.emoji, qty:0, estPrice:m.price, note:'', vendor:m.vendor, cat:m.category, bread: isSand(m.category, m.name) ? lastBread() : '' }; S.cart.push(c); }
   c.qty = Math.min(50, c.qty + d);
   if (c.qty <= 0) S.cart = S.cart.filter(x => x !== c);
   render();
@@ -408,7 +410,7 @@ function viewGroup(){
   if (!mine.length) html += `<div class="empty"><span class="e">🍽️</span>لسه مطلبتش حاجة من ${VENDORS[v].short}</div>`;
   else {
     html += mine.map(l => `<div class="row"><div class="qty">${l.qty}</div>
-      <div><div class="nm">${esc(l.item)}</div>${multi?`<div class="sub">الجولة ${l.rd}</div>`:''}${l.note?`<div class="sub">📝 ${esc(l.note)}</div>`:''}</div>
+      <div><div class="nm">${esc(dispName(l.item, catOf(l)))}</div>${l.bread?`<div class="sub">${breadTxt(l.bread)}</div>`:''}${multi?`<div class="sub">الجولة ${l.rd}</div>`:''}${l.note?`<div class="sub">📝 ${esc(l.note)}</div>`:''}</div>
       <div class="end">${fmt(l.qty*unitPrice(l))}${l.open?`<button class="x" data-act="del" data-id="${esc(l.id)}">✕</button>`:''}</div></div>`).join('');
     html += `<div class="total"><span>حسابي ${est?'<span class="pill est">تقديري</span>':'<span class="pill ok">نهائي</span>'}</span><span>${fmt(myTotal + fee)}</span></div>`;
     if (fee) html += `<div class="sub" style="margin-top:6px;font-weight:600;color:var(--muted)">شامل ${fmt(fee)} نصيبك من التوصيل 🛵</div>`;
@@ -419,8 +421,8 @@ function viewGroup(){
   html += `<div class="card"><h2>👥 الأوردر المجمع${multi?` (جولة ${o.round})`:''} <span class="cnt">${groups.reduce((a,g)=>a+g.qty,0)} حاجة</span></h2>`;
   if (!groups.length) html += `<div class="empty"><span class="e">🦗</span>لسه مفيش حد طلب… كون أول واحد!</div>`;
   else html += groups.map(g => `<div class="row" style="align-items:flex-start"><div class="qty">${g.qty}</div>
-      <div style="flex:1"><div class="nm">${esc(g.item)}</div>
-      <div class="chips">${g.people.map(p => `<span class="chip ${p.mine?'me':''}">${esc(p.name)} ×${p.qty}${p.note?` <small>(${esc(p.note)})</small>`:''} <small>· ${floorLabel(p.floor)}/${esc(p.office)}</small></span>`).join('')}</div></div></div>`).join('');
+      <div style="flex:1"><div class="nm">${esc(dispName(g.item, g.cat))}${breadSum(g)?` <span class="tag">${breadSum(g)}</span>`:''}</div>
+      <div class="chips">${g.people.map(p => `<span class="chip ${p.mine?'me':''}">${esc(p.name)} ×${p.qty}${p.bread?` ${breadTxt(p.bread)}`:''}${p.note?` <small>(${esc(p.note)})</small>`:''} <small>· ${floorLabel(p.floor)}/${esc(p.office)}</small></span>`).join('')}</div></div></div>`).join('');
   html += '</div>';
   return html;
 }
@@ -433,14 +435,21 @@ function catOf(l, v){
 }
 function kindOf(g){ return isSand(g.cat, g.item) ? 'sand' : 'other'; }
 
+const BREAD = { 'بلدي': '🫓 بلدي', 'شامي': '🥙 شامي' };
+const breadTxt = b => BREAD[b] || '';
+const dispName = (item, cat) => (isSand(cat, item) && !/س[اَ]?ندوتش/.test(item)) ? 'سندوتش ' + item : item;
+const lastBread = () => load('hm_bread') || 'بلدي';
+const breadSum = g => Object.keys(g.breads || {}).filter(Boolean).map(b => `${b} ${g.breads[b]}`).join('، ');
+
 function groupByItem(lines){
   const map = new Map();
   lines.forEach(l => {
     const k = normKey(l.item);
-    if (!map.has(k)) map.set(k, { item:l.item, qty:0, people:[], cat: catOf(l) });
+    if (!map.has(k)) map.set(k, { item:l.item, qty:0, people:[], breads:{}, cat: catOf(l) });
     const g = map.get(k); g.qty += l.qty;
-    const p = g.people.find(x => x.uk === l.uk && x.note === l.note);
-    if (p) p.qty += l.qty; else g.people.push({ uk:l.uk, name:l.name, floor:l.floor, office:l.office, qty:l.qty, note:l.note, mine:l.mine });
+    const bd = l.bread || ''; g.breads[bd] = (g.breads[bd] || 0) + l.qty;
+    const p = g.people.find(x => x.uk === l.uk && x.note === l.note && x.bread === bd);
+    if (p) p.qty += l.qty; else g.people.push({ uk:l.uk, name:l.name, floor:l.floor, office:l.office, qty:l.qty, note:l.note, bread:bd, mine:l.mine });
   });
   return [...map.values()];
 }
@@ -472,8 +481,8 @@ function viewCourier(){
     const gs = items.filter(g => kindOf(g) === k); if (!gs.length) return '';
     return `<div class="kind" style="background:${c}">${t}<span>${gs.reduce((a,g)=>a+g.qty,0)}</span></div>` + gs.map(g =>
       `<div class="row" style="align-items:flex-start"><div class="qty">${g.qty}</div><div style="flex:1">
-      <div class="nm">${esc(g.item)}${g.cat?` <span class="tag">${esc(g.cat)}</span>`:''}</div><div class="chips">${g.people.map(p =>
-      `<span class="chip">${esc(p.name)} ×${p.qty}${p.note?` <small>(${esc(p.note)})</small>`:''}</span>`).join('')}</div></div></div>`).join('');
+      <div class="nm">${esc(dispName(g.item, g.cat))}${breadSum(g)?` <span class="tag" style="background:#FFE9A8;color:#6b4a00">${breadSum(g)}</span>`:''}</div><div class="chips">${g.people.map(p =>
+      `<span class="chip">${esc(p.name)} ×${p.qty}${p.bread?` ${breadTxt(p.bread)}`:''}${p.note?` <small>(${esc(p.note)})</small>`:''}</span>`).join('')}</div></div></div>`).join('');
   }).join('');
   html += '</div>';
 
@@ -481,7 +490,7 @@ function viewCourier(){
     html += receiptCard(v);
     html += `<div class="card ptable"><h2>💰 الأسعار الفعلية</h2><p class="hint" style="margin:-4px 0 6px;color:var(--muted);font-weight:600;font-size:13px">اكتب سعر الوحدة اللي دفعته وهيتحسب لكل واحد</p>`;
     const rs = receiptStats(v);
-    html += prices.map(p => `<div class="row"><div><div class="nm">${esc(p.item)}</div><div class="sub">× ${p.qty} ${rs.bought[p.key] ? '<span class="badge-ok">✅ من الريسيت</span>' : (rs.has ? '<span class="badge-miss">⚠️ مش في الريسيت</span>' : '')}</div></div>
+    html += prices.map(p => `<div class="row"><div><div class="nm">${esc(dispName(p.item, p.cat))}</div><div class="sub">× ${p.qty} ${rs.bought[p.key] ? '<span class="badge-ok">✅ من الريسيت</span>' : (rs.has ? '<span class="badge-miss">⚠️ مش في الريسيت</span>' : '')}</div></div>
       <div class="end"><input type="number" inputmode="decimal" min="0" step="0.25" data-price="${esc(p.key)}" value="${p.value}"> ج</div></div>`).join('');
     html += `<div class="row"><div class="nm">🛵 رسوم التوصيل (بتتقسم على الكل)</div><div class="end">
       <input type="number" inputmode="decimal" min="0" step="0.5" id="fee" value="${S.fee[pk(v)] ?? o.fee}"> ج</div></div>
@@ -501,7 +510,7 @@ function receiptStats(v){
     if (l.match) { const k = normKey(l.match); bought[k] = (bought[k] || 0) + l.qty; }
     else extra.push(l);
   }));
-  const missing = groupByItem(o.lines).map(g => ({ item: g.item, need: g.qty - (bought[normKey(g.item)] || 0) })).filter(x => x.need > 0);
+  const missing = groupByItem(o.lines).map(g => ({ item: dispName(g.item, g.cat), need: g.qty - (bought[normKey(g.item)] || 0) })).filter(x => x.need > 0);
   return { has: (o.receipts || []).length > 0, bought, missing, extra };
 }
 
@@ -562,7 +571,7 @@ function vendorPrices(v){
   const map = new Map();
   cv(v).lines.forEach(l => {
     const k = normKey(l.item);
-    if (!map.has(k)) map.set(k, { key:k, item:l.item, qty:0, base:null });
+    if (!map.has(k)) map.set(k, { key:k, item:l.item, qty:0, base:null, cat: catOf(l) });
     const e = map.get(k); e.qty += l.qty;
     if (e.base == null) e.base = l.actualPrice != null ? l.actualPrice : l.estPrice;
   });
@@ -596,7 +605,7 @@ function billsHtml(v){
   return billList(v).map(b => `<div class="bill ${b.paid?'paid':''}">
     <div class="hd"><div class="loc">${floorLabel(b.floor)}<br>مكتب ${esc(b.office)}</div><div class="nm" style="font-size:16px">${esc(b.name)}</div>
     <span class="pill ${b.paid?'ok':'no'}" style="margin-inline-start:auto">${b.paid?'دفع ✅':'لسه'}</span></div>
-    ${b.lines.map(l => `<div class="ln"><span>${l.qty} × ${esc(l.item)}${l.note?` <small>(${esc(l.note)})</small>`:''}</span><span>${fmt(l.qty*effPrice(v,l))}</span></div>`).join('')}
+    ${b.lines.map(l => `<div class="ln"><span>${l.qty} × ${esc(dispName(l.item, catOf(l)))}${l.bread?` (${esc(l.bread)})`:''}${l.note?` <small>(${esc(l.note)})</small>`:''}</span><span>${fmt(l.qty*effPrice(v,l))}</span></div>`).join('')}
     ${b.fee?`<div class="ln"><span>🛵 توصيل</span><span>${fmt(b.fee)}</span></div>`:''}
     <div class="tot"><span>الحساب</span><span>${fmt(b.total)}</span></div>
     <div class="btns"><button class="btn sm ${b.paid?'o':'g'}" data-act="paid" data-uk="${esc(b.uk)}" data-v="${b.paid?0:1}">${b.paid?'↩️ لغي الدفع':'💵 استلمت الفلوس'}</button></div></div>`).join('');
@@ -635,9 +644,11 @@ function reviewSheet(){
   if (needProfile()) return;
   if (!S.cart.length) return closeSheet();
   const v = S.vendor, total = S.cart.reduce((a,c) => a + c.qty * c.estPrice, 0);
-  openSheet(`<h2>${VENDORS[v].emoji} مراجعة الطلب</h2><p class="hint">تقدر تكتب ملاحظة لأي صنف (من غير بصل…)</p>` +
+  openSheet(`<h2>${VENDORS[v].emoji} مراجعة الطلب</h2><p class="hint">اختار العيش للسندوتشات (بلدي ولا شامي)، وتقدر تكتب ملاحظة (من غير بصل…)</p>` +
     S.cart.map((c,i) => `<div class="row" style="align-items:flex-start"><div style="font-size:28px">${esc(c.emoji)}</div><div style="flex:1">
       <div class="nm">${esc(c.item)} <span class="sub">${c.estPrice?fmt(c.estPrice):''}</span></div>
+      ${isSand(c.cat, c.item) ? `<div class="cats" style="padding:6px 0 2px">${Object.keys(BREAD).map(b => `<button class="cat ${c.bread===b?'on':''}" data-act="bread" data-i="${i}" data-b="${b}">${BREAD[b]}</button>`).join('')}
+        <button class="cat" style="border-style:dashed" data-act="dupBread" data-i="${i}">➕ واحد بعيش تاني</button></div>` : ''}
       <input data-note="${i}" value="${esc(c.note)}" placeholder="ملاحظة…" style="margin-top:6px;padding:8px 10px" maxlength="100"></div>
       <div class="step"><button class="m" data-act="cdec" data-i="${i}">−</button><span>${c.qty}</span><button data-act="cinc" data-i="${i}">+</button></div></div>`).join('') +
     `<div class="total"><span>تقريباً</span><span>${fmt(total)}</span></div>
@@ -693,14 +704,16 @@ document.addEventListener('click', async e => {
       case 'addCustom': {
         const name = $('#c_name').value.trim(); if (!name) return toast('اكتب اسم الصنف', true);
         const qty = Math.max(1, Math.min(50, parseInt($('#c_qty').value, 10) || 1));
-        S.cart.push({ key: 'c:' + Date.now(), item: name, emoji: '✍️', qty, estPrice: Number($('#c_price').value) || 0, note: $('#c_note').value.trim(), vendor: S.vendor });
+        S.cart.push({ key: 'c:' + Date.now(), mid: null, item: name, emoji: '✍️', qty, estPrice: Number($('#c_price').value) || 0, note: $('#c_note').value.trim(), vendor: S.vendor, cat: '', bread: isSand('', name) ? lastBread() : '' });
         closeSheet(); render(); reviewSheet(); break;
       }
       case 'review': reviewSheet(); break;
+      case 'bread': S.cart[d.i].bread = d.b; store('hm_bread', d.b); reviewSheet(); break;
+      case 'dupBread': { const c = S.cart[d.i]; S.cart.splice(+d.i + 1, 0, { ...c, key: c.key + 'd' + Date.now(), qty: 1, note: '', bread: c.bread === 'بلدي' ? 'شامي' : 'بلدي' }); reviewSheet(); render(); break; }
       case 'cinc': S.cart[d.i].qty = Math.min(50, S.cart[d.i].qty + 1); reviewSheet(); break;
       case 'cdec': { const c = S.cart[d.i]; c.qty--; if (c.qty <= 0) S.cart.splice(d.i, 1); reviewSheet(); render(); break; }
       case 'submit': {
-        const items = S.cart.map(c => ({ item: c.item, qty: c.qty, estPrice: c.estPrice, note: c.note }));
+        const items = S.cart.map(c => ({ item: c.item, qty: c.qty, estPrice: c.estPrice, note: c.note, bread: c.bread || '' }));
         t.disabled = true;
         try { await run(call('addLines', S.me, S.vendor, items)); }
         catch(err){ t.disabled = false; refresh(true); break; }
@@ -760,7 +773,7 @@ async function savePrices(){
 function listText(){
   const v = S.vendor;
   const gs = groupByItem(cv(v).lines);
-  const sec = (k, t) => { const a = gs.filter(g => kindOf(g) === k); return a.length ? `\n${t}:\n` + a.map(g => `• ${g.item} × ${g.qty}`).join('\n') : ''; };
+  const sec = (k, t) => { const a = gs.filter(g => kindOf(g) === k); return a.length ? `\n${t}:\n` + a.map(g => `• ${dispName(g.item, g.cat)} × ${g.qty}${breadSum(g) ? ' (' + breadSum(g) + ')' : ''}`).join('\n') : ''; };
   return `طلب ${VENDORS[v].name}${rounds(v).length>1?' (جولة '+cv(v).round+')':''}:` + sec('sand', '🥙 سندوتشات') + sec('other', '🍽️ أطباق وطلبات تانية');
 }
 function billsText(){
