@@ -417,6 +417,17 @@ function deleteLine(userId, lineId) {
 
 function courierLogin(pin) { checkPin_(pin); return true; }
 
+// سعر مسئول التوصيل الفعلي هو المرجع: بيتحدّث بيه سعر الصنف في المنيو
+function updateMenuPrices_(vendor, prices) {
+  read_('Menu').forEach(function (m) {
+    if (m.vendor !== vendor || str_(m.active) === '0') return;
+    var k = norm_(m.name);
+    if (!Object.prototype.hasOwnProperty.call(prices, k)) return;
+    var p = num_(prices[k]);
+    if (p > 0 && p !== num_(m.price)) { m.price = p; save_('Menu', m); }
+  });
+}
+
 function courierSetStatus(pin, vendor, status, round) {
   checkPin_(pin);
   return withLock_(function () {
@@ -442,7 +453,7 @@ function courierSave(pin, vendor, prices, fee, round) {
     o.fee = Math.max(0, num_(fee));
     save_('Orders', o);
     var sh = getDb_().getSheetByName('Lines'), h = SCHEMA_.Lines, last = sh.getLastRow();
-    if (last < 2) return true;
+    if (last < 2) { updateMenuPrices_(vendor, prices || {}); return true; }
     var rng = sh.getRange(2, 1, last - 1, h.length), vals = rng.getValues();
     var iO = h.indexOf('orderId'), iI = h.indexOf('item'), iA = h.indexOf('actualPrice');
     vals.forEach(function (r) {
@@ -453,6 +464,7 @@ function courierSave(pin, vendor, prices, fee, round) {
       }
     });
     rng.setValues(vals);
+    updateMenuPrices_(vendor, prices || {});
     return true;
   });
 }
@@ -566,6 +578,9 @@ function applyReceiptPrices_(order) {
     });
     rng.setValues(vals);
   }
+  var unit = {};
+  Object.keys(agg).forEach(function (k) { if (agg[k].qty > 0) unit[k] = Math.round(agg[k].total / agg[k].qty * 100) / 100; });
+  updateMenuPrices_(order.vendor, unit);
   if (num_(order.fee) === 0 && fee > 0) { order.fee = fee; save_('Orders', order); }
 }
 
