@@ -89,7 +89,7 @@ header:after{width:90px;height:90px;bottom:-30px;right:30%}
 .cartbar .go{margin-inline-start:auto;background:var(--yellow);color:var(--ink);font-weight:900;border-radius:14px;padding:10px 16px}
 nav{position:fixed;inset-inline:0;bottom:0;z-index:30;background:#fff;border-radius:26px 26px 0 0;box-shadow:0 -6px 24px rgba(42,31,77,.12);
   display:flex;justify-content:space-around;padding:8px 8px calc(8px + env(safe-area-inset-bottom))}
-nav button{background:none;flex:1;max-width:200px;border-radius:18px;padding:6px 4px;font-weight:800;font-size:13px;color:var(--muted);
+nav button{background:none;flex:1;max-width:200px;border-radius:18px;padding:6px 2px;font-weight:800;font-size:12px;line-height:1.2;color:var(--muted);
   display:flex;flex-direction:column;align-items:center;gap:0}
 nav button .e{font-size:24px;transition:.2s}
 nav button.on{background:#FFF0B8;color:var(--ink)}
@@ -199,14 +199,14 @@ const VENDORS = {
 const BUBBLES = ['#FFE9A8', '#FFD3E1', '#CFF5EA', '#D6E4FF', '#E6DDFF', '#FFDCC2'];
 const STATUS_TXT = {
   open:   ['🟢', 'الأوردر مفتوح — ضيف اللي نفسك فيه'],
-  closed: ['🛵', 'الأوردر اتقفل — السواق راح يطلبه'],
-  done:   ['🎉', 'الأوردر وصل — السواق بيحاسب الناس']
+  closed: ['🛵', 'الأوردر اتقفل — مسئول التوصيل راح يطلبه'],
+  done:   ['🎉', 'الأوردر وصل — مسئول التوصيل بيحاسب الناس']
 };
 
 /* ======================= الحالة ======================= */
 const S = {
   me: load('hm_profile'), menu: [], orders: {}, tab: 'order', vendor: 'foul', cat: 'all',
-  cart: [], pin: sessionGet('hm_pin'), prices: {}, fee: {}, today: '', loaded: false, busy: false
+  cart: [], hist: [], pin: sessionGet('hm_pin'), prices: {}, fee: {}, today: '', loaded: false, busy: false
 };
 
 function load(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } }
@@ -257,16 +257,23 @@ async function refresh(silent){
     const st = await call('getState', S.me ? S.me.id : '');
     S.menu = st.menu; S.orders = st.orders; S.today = st.today; S.loaded = true;
     render();
+    if (S.me && (!S._histAt || Date.now() - S._histAt > 120000)) loadHist();
   } catch(e){ if (!silent) toast(e.message, true); S.loaded = true; render(); }
+}
+
+async function loadHist(){
+  if (!S.me) return;
+  S._histAt = Date.now();
+  try { S.hist = await call('getHistory', S.me.id); if (S.tab === 'order' || S.tab === 'hist') render(); } catch(e){}
 }
 
 /* ======================= الرسم ======================= */
 function render(){
   $('#who').innerHTML = S.me ? `<b>${esc(S.me.name)}</b>${floorLabel(S.me.floor)} · مكتب ${esc(S.me.office)}` : 'سجّل بياناتك';
-  $('#nav').innerHTML = [['order','🍳','اطلب'],['group','🧾','الأوردر'],['courier','🛵','السواق']]
+  $('#nav').innerHTML = [['order','🍳','اطلب'],['group','🧾','الأوردر'],['hist','📜','سجلّي'],['courier','🛵','مسئول التوصيل']]
     .map(([k,e,t]) => `<button class="${S.tab===k?'on':''}" data-act="tab" data-v="${k}"><span class="e">${e}</span>${t}</button>`).join('');
   if (!S.loaded) { $('#app').innerHTML = '<div class="empty"><span class="e spin">🥙</span>ثواني بنجهز الفطار…</div>'; $('#cartbar').innerHTML=''; return; }
-  $('#app').innerHTML = S.tab === 'order' ? viewOrder() : S.tab === 'group' ? viewGroup() : viewCourier();
+  $('#app').innerHTML = S.tab === 'order' ? viewOrder() : S.tab === 'group' ? viewGroup() : S.tab === 'hist' ? viewHist() : viewCourier();
   renderCartBar();
 }
 
@@ -288,7 +295,7 @@ function viewOrder(){
   if (S.cat !== 'all' && !cats.includes(S.cat)) S.cat = 'all';
   const shown = items.filter(m => S.cat === 'all' || m.category === S.cat);
   const closed = ord(v).status !== 'open';
-  return vendorChips() + banner(v) +
+  return vendorChips() + banner(v) + suggestion() +
     `<div class="cats"><button class="cat ${S.cat==='all'?'on':''}" data-act="cat" data-v="all">الكل</button>` +
     cats.map(c => `<button class="cat ${S.cat===c?'on':''}" data-act="cat" data-v="${esc(c)}">${esc(c)}</button>`).join('') + '</div>' +
     `<div class="grid ${closed?'disabled':''}">` +
@@ -301,6 +308,55 @@ function viewOrder(){
       </div>`;
     }).join('') +
     `<button class="item custom" data-act="custom"><div class="bub">✍️</div>صنف تاني مش في القايمة</button></div>`;
+}
+
+/* ---------- اقتراح اليوم + السجل ---------- */
+function dayDiff(a, b){ return Math.round((new Date(b) - new Date(a)) / 86400000); }
+function dayLabel(d){
+  const n = dayDiff(d, S.today);
+  return n === 1 ? 'امبارح' : n === 2 ? 'أول امبارح' : 'يوم ' + d;
+}
+function lastOrder(v){ return S.hist.find(h => h.vendor === v && h.date < S.today); }
+function suggestion(){
+  if (!S.me || !S.today || ord(S.vendor).status !== 'open') return '';
+  if (S.hist.some(h => h.vendor === S.vendor && h.date === S.today)) return '';
+  if (S.cart.length || load('hm_skip') === S.today + S.vendor) return '';
+  const h = lastOrder(S.vendor); if (!h) return '';
+  const hr = new Date().getHours();
+  const hello = hr < 12 ? '☀️ صباح الفل يا ' : hr < 17 ? '🌤️ أهلاً يا ' : '🌙 مساء الخير يا ';
+  return `<div class="card" style="background:linear-gradient(135deg,#FFF0B8,#FFD3E1);border:3px solid var(--ink)">
+    <h2>${hello}${esc(S.me.name)}</h2>
+    <p style="margin:0 0 8px;font-weight:700">${VENDORS[S.vendor].emoji} تحب نفس طلب <b>${dayLabel(h.date)}</b>؟</p>
+    <div class="chips" style="margin:0 0 6px">${h.items.map(i => `<span class="chip" style="background:#fff">${i.qty} × ${esc(i.item)}</span>`).join('')}</div>
+    <div class="sub" style="font-weight:700;color:var(--muted)">حوالي ${fmt(h.total)}</div>
+    <div class="btns"><button class="btn g" data-act="reorder" data-i="${S.hist.indexOf(h)}">آه، زي ${dayLabel(h.date)} 👍</button>
+    <button class="btn o" data-act="skipSuggest">لأ، هختار 🙅</button></div></div>`;
+}
+
+function reorder(h){
+  if (needProfile()) return;
+  if (ord(h.vendor).status !== 'open') return toast('الأوردر اتقفل 🔒', true);
+  S.vendor = h.vendor; S.cat = 'all'; S.tab = 'order';
+  S.cart = h.items.map((i, k) => {
+    const m = S.menu.find(x => x.vendor === h.vendor && normKey(x.name) === normKey(i.item));
+    return { key: m ? 'm:' + m.id : 'c:r' + k, item: i.item, emoji: m ? m.emoji : '✍️', qty: i.qty,
+             estPrice: m ? m.price : i.price, note: i.note, vendor: h.vendor };
+  });
+  render(); reviewSheet();
+}
+
+function viewHist(){
+  const month = S.today.slice(0, 7), mt = S.hist.filter(h => h.date.slice(0, 7) === month).reduce((a, h) => a + h.total, 0);
+  let html = `<div class="card" style="margin-top:16px;background:linear-gradient(135deg,#E6E0FF,#CFF5EA)"><h2>📜 سجلّ مشترياتي</h2>
+    <div class="total" style="margin-top:0"><span>الشهر ده صرفت</span><span>${fmt(mt)}</span></div></div>`;
+  if (!S.me) return html + '<div class="empty"><span class="e">🙋</span>سجّل بياناتك الأول</div>';
+  if (!S.hist.length) return html + '<div class="empty"><span class="e">🍽️</span>لسه مفيش طلبات في السجل</div>';
+  return html + S.hist.map((h, i) => `<div class="card"><h2>${VENDORS[h.vendor] ? VENDORS[h.vendor].emoji : '🛍️'} ${dayLabel(h.date)}
+      <span class="cnt" style="background:#E6E0FF">${h.date}</span></h2>
+    ${h.items.map(it => `<div class="row"><div class="qty">${it.qty}</div><div><div class="nm">${esc(it.item)}</div>${it.note ? `<div class="sub">📝 ${esc(it.note)}</div>` : ''}</div>
+      <div class="end">${fmt(it.qty * it.price)}</div></div>`).join('')}
+    <div class="total"><span>الإجمالي</span><span>${fmt(h.total)}</span></div>
+    ${h.date < S.today ? `<div class="btns"><button class="btn y full" data-act="reorder" data-i="${i}">🔁 اطلبه تاني</button></div>` : ''}</div>`).join('');
 }
 
 function renderCartBar(){
@@ -362,10 +418,10 @@ function groupByItem(lines){
   return [...map.values()];
 }
 
-/* ---------- السواق ---------- */
+/* ---------- مسئول التوصيل ---------- */
 function viewCourier(){
   if (!S.pin) return `<div class="card" style="margin-top:18px;text-align:center"><div style="font-size:54px">🛵</div>
-    <h2 style="justify-content:center">منطقة السواق</h2><p class="hint" style="color:var(--muted);font-weight:600;margin:0 0 6px">اكتب الكود السري</p>
+    <h2 style="justify-content:center">منطقة مسئول التوصيل</h2><p class="hint" style="color:var(--muted);font-weight:600;margin:0 0 6px">اكتب الكود السري</p>
     <input class="pin" id="pin" type="password" inputmode="numeric" placeholder="••••" autocomplete="off">
     <div class="btns" style="justify-content:center"><button class="btn" data-act="login">دخول</button></div></div>`;
 
@@ -402,7 +458,7 @@ function viewCourier(){
   }
 
   html += `<details><summary>🍽️ إدارة المنيو</summary><div class="inner">${menuAdmin(v)}</div></details>
-    <div class="btns" style="justify-content:center"><button class="btn o sm" data-act="logout">خروج من منطقة السواق</button></div>`;
+    <div class="btns" style="justify-content:center"><button class="btn o sm" data-act="logout">خروج من منطقة مسئول التوصيل</button></div>`;
   return html;
 }
 
@@ -469,7 +525,7 @@ function profileSheet(first){
   const m = S.me || {};
   const floors = [['-1','البدروم'],['0','الأرضي']].concat(Array.from({length:25},(_, i) => [String(i+1), 'الدور ' + (i+1)]));
   openSheet(`<h2>${first?'أهلاً بيك في هاتلى معاك 👋':'بياناتي'}</h2>
-    <p class="hint">عشان السواق يعرف يوصلك الطلب 🛵</p>
+    <p class="hint">عشان مسئول التوصيل يعرف يوصلك الطلب 🛵</p>
     <label>اسمك</label><input id="p_name" value="${esc(m.name||'')}" placeholder="مثلاً: أحمد" maxlength="40">
     <div class="two"><div><label>الدور</label><select id="p_floor">${floors.map(([v,t]) =>
       `<option value="${v}" ${String(m.floor)===v?'selected':''}>${t}</option>`).join('')}</select></div>
@@ -520,7 +576,7 @@ document.addEventListener('click', async e => {
   if (act === 'ovclose') { if (e.target === t) closeSheet(); return; }
   try {
     switch (act) {
-      case 'tab': S.tab = d.v; render(); window.scrollTo(0,0); if (d.v !== 'courier') refresh(true); break;
+      case 'tab': S.tab = d.v; render(); window.scrollTo(0,0); if (d.v !== 'courier') refresh(true); if (d.v === 'hist') loadHist(); break;
       case 'vendor': S.vendor = d.v; S.cat = 'all'; S.cart = S.cart.filter(c => c.vendor === d.v); render(); break;
       case 'cat': S.cat = d.v; render(); break;
       case 'inc': if (!needProfile()) { if (ord(S.vendor).status!=='open') return toast('الأوردر اتقفل 🔒', true); changeCart(d.id, 1); } break;
@@ -535,6 +591,8 @@ document.addEventListener('click', async e => {
         S.me = p; store('hm_profile', p); closeSheet(); toast('أهلاً يا ' + p.name + ' 🎉'); refresh(true); break;
       }
       case 'custom': customSheet(); break;
+      case 'reorder': reorder(S.hist[+d.i]); break;
+      case 'skipSuggest': store('hm_skip', S.today + S.vendor); render(); break;
       case 'addCustom': {
         const name = $('#c_name').value.trim(); if (!name) return toast('اكتب اسم الصنف', true);
         const qty = Math.max(1, Math.min(50, parseInt($('#c_qty').value, 10) || 1));
@@ -549,7 +607,7 @@ document.addEventListener('click', async e => {
         t.disabled = true;
         try { await run(call('addLines', S.me, S.vendor, items)); }
         catch(err){ t.disabled = false; refresh(true); break; }
-        S.cart = []; closeSheet(); toast('اتضاف للأوردر 🎉'); S.tab = 'group'; await refresh(true); break;
+        S.cart = []; closeSheet(); toast('اتضاف للأوردر 🎉'); S.tab = 'group'; S._histAt = 0; await refresh(true); break;
       }
       case 'del': await run(call('deleteLine', S.me.id, d.id), 'اتمسح'); await refresh(true); break;
 

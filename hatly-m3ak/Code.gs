@@ -2,7 +2,7 @@
  * هاتلى معاك — طلبات الفطار والسوبرماركت للموظفين
  * Google Apps Script web app. البيانات بتتخزن في Google Sheet تتعمل أوتوماتيك.
  *
- * كود السواق: Project Settings > Script properties > COURIER_PIN (الافتراضي 1234)
+ * كود مسئول التوصيل: Project Settings > Script properties > COURIER_PIN (الافتراضي 1234)
  */
 
 var TZ_ = 'Africa/Cairo';
@@ -55,6 +55,19 @@ var SEED_MENU_ = [
   ['super', 'حاجات تانية', 'سكر', 30, '🧂']
 ];
 
+
+// سجاير (الأسعار تقريبية وتتعدل من إدارة المنيو)
+var CIG_SEED_ = [
+  ['كليوباترا', 55], ['كليوباترا كينج', 60], ['كليوباترا ميني', 50],
+  ['ميريت', 75], ['ميريت أزرق', 75],
+  ['مارلبورو أحمر', 105], ['مارلبورو جولد', 105], ['مارلبورو أخضر (مينت)', 105],
+  ['وينستون أحمر', 95], ['وينستون أزرق', 95],
+  ['إل آند إم أحمر', 85], ['إل آند إم أزرق', 85],
+  ['روثمانز أزرق', 95], ['روثمانز أحمر', 95],
+  ['كنت', 105], ['دانهيل', 105], ['بلمونت', 55], ['ديلتا', 50],
+  ['فاين', 45], ['سوبر سنتر', 40]
+];
+
 var db_ = null;
 
 function doGet() {
@@ -81,7 +94,22 @@ function getDb_() {
   }
   ensureSchema_(ss);
   db_ = ss;
+  migrateCigs_();
   return ss;
+}
+
+function migrateCigs_() {
+  var props = PropertiesService.getScriptProperties();
+  if (props.getProperty('CIGS_SEEDED')) return;
+  var sh = db_.getSheetByName('Menu'), h = SCHEMA_.Menu;
+  var has = read_('Menu').some(function (m) { return m.category === 'سجاير'; });
+  if (!has) {
+    var rows = CIG_SEED_.map(function (c) {
+      return [newId_('m_'), 'super', 'سجاير', c[0], c[1], '🚬', 1];
+    });
+    sh.getRange(sh.getLastRow() + 1, 1, rows.length, h.length).setNumberFormat('@').setValues(rows);
+  }
+  props.setProperty('CIGS_SEEDED', '1');
 }
 
 function ensureSchema_(ss) {
@@ -251,7 +279,8 @@ function addLines(profile, vendor, items) {
     if (!items || !items.length || items.length > 30) throw new Error('مفيش أصناف تتضاف');
     upsertUser_(p);
     var order = getOrCreateOrder_(vendor);
-    if (order.status !== 'open') throw new Error('الأوردر اتقفل، السواق نازل يطلب 🛵');
+    if (order.status !== 'open') throw new Error('الأوردر اتقفل، مسئول التوصيل نازل يطلب 🛵');
+    var menuNow = read_('Menu');
     items.forEach(function (it) {
       var item = norm_(it.item).slice(0, 60), qty = parseInt(it.qty, 10);
       if (!item || isNaN(qty) || qty < 1 || qty > 50) throw new Error('صنف أو كمية غلط');
@@ -261,9 +290,41 @@ function addLines(profile, vendor, items) {
         estPrice: Math.max(0, num_(it.estPrice)), actualPrice: '',
         note: norm_(it.note).slice(0, 100), paid: 0, createdAt: now_()
       });
+      addToMenuIfNew_(menuNow, vendor, item, Math.max(0, num_(it.estPrice)));
     });
     return true;
   });
+}
+
+// أي صنف جديد يكتبه موظف يتضاف للمنيو أوتوماتيك عشان يتطلب تاني بضغطة
+function addToMenuIfNew_(menu, vendor, name, price) {
+  var found = menu.filter(function (m) { return m.vendor === vendor && norm_(m.name) === name; })[0];
+  if (found) return; // موجود (أو مسئول التوصيل مسحه قبل كده فمنرجعوش)
+  var rec = { id: newId_('m_'), vendor: vendor, category: 'إضافات الزملاء', name: name,
+              price: price, emoji: '✨', active: 1 };
+  append_('Menu', rec);
+  menu.push(rec);
+}
+
+// تاريخ مشتريات الموظف (آخر ٩٠ يوم)
+function getHistory(userId) {
+  if (!userId) return [];
+  var orders = {};
+  read_('Orders').forEach(function (o) { orders[o.id] = o; });
+  var cutoff = Utilities.formatDate(new Date(Date.now() - 90 * 86400000), TZ_, 'yyyy-MM-dd');
+  var groups = {};
+  read_('Lines').forEach(function (l) {
+    if (l.userId !== userId) return;
+    var o = orders[l.orderId]; if (!o) return;
+    var date = dateStr_(o.date); if (date < cutoff) return;
+    var key = date + '|' + o.vendor;
+    var g = groups[key] || (groups[key] = { date: date, vendor: o.vendor, items: [], total: 0 });
+    var price = str_(l.actualPrice) === '' ? num_(l.estPrice) : num_(l.actualPrice);
+    g.items.push({ item: l.item, qty: num_(l.qty), note: str_(l.note), price: price });
+    g.total += num_(l.qty) * price;
+  });
+  return Object.keys(groups).map(function (k) { return groups[k]; })
+    .sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
 }
 
 function deleteLine(userId, lineId) {
@@ -277,7 +338,7 @@ function deleteLine(userId, lineId) {
   });
 }
 
-/* -------------------------------- للسواق -------------------------------- */
+/* -------------------------------- لمسئول التوصيل -------------------------------- */
 
 function courierLogin(pin) { checkPin_(pin); return true; }
 
