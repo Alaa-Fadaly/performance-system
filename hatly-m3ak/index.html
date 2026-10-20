@@ -178,6 +178,15 @@ summary::-webkit-details-marker{display:none}
 details[open] summary{border-radius:var(--r) var(--r) 0 0;box-shadow:none}
 details .inner{background:#fff;padding:0 14px 14px;border-radius:0 0 var(--r) var(--r);box-shadow:var(--shadow)}
 .hide{display:none!important}
+.alert{border-radius:18px;padding:12px 14px;margin-bottom:14px;font-weight:700;border:3px solid}
+.alert.bad{background:#FFE0E8;border-color:#d6245a;color:#7a0a2e;animation:shake .5s}
+.alert.good{background:#D9F8EE;border-color:var(--mint);color:#07654f}
+.alert ul{margin:6px 0 0;padding-inline-start:20px}
+@keyframes shake{20%,60%{transform:translateX(5px)}40%,80%{transform:translateX(-5px)}}
+.rbtn{display:block;text-align:center;cursor:pointer}
+.rbtn input{display:none}
+.badge-ok{display:inline-block;background:#D9F8EE;color:#07654f;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:800}
+.badge-miss{display:inline-block;background:#FFE0E8;color:#b0093a;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:800}
 </style>
 </head>
 <body>
@@ -469,8 +478,10 @@ function viewCourier(){
   html += '</div>';
 
   if (items.length) {
+    html += receiptCard(v);
     html += `<div class="card ptable"><h2>💰 الأسعار الفعلية</h2><p class="hint" style="margin:-4px 0 6px;color:var(--muted);font-weight:600;font-size:13px">اكتب سعر الوحدة اللي دفعته وهيتحسب لكل واحد</p>`;
-    html += prices.map(p => `<div class="row"><div><div class="nm">${esc(p.item)}</div><div class="sub">× ${p.qty}</div></div>
+    const rs = receiptStats(v);
+    html += prices.map(p => `<div class="row"><div><div class="nm">${esc(p.item)}</div><div class="sub">× ${p.qty} ${rs.bought[p.key] ? '<span class="badge-ok">✅ من الريسيت</span>' : (rs.has ? '<span class="badge-miss">⚠️ مش في الريسيت</span>' : '')}</div></div>
       <div class="end"><input type="number" inputmode="decimal" min="0" step="0.25" data-price="${esc(p.key)}" value="${p.value}"> ج</div></div>`).join('');
     html += `<div class="row"><div class="nm">🛵 رسوم التوصيل (بتتقسم على الكل)</div><div class="end">
       <input type="number" inputmode="decimal" min="0" step="0.5" id="fee" value="${S.fee[pk(v)] ?? o.fee}"> ج</div></div>
@@ -482,6 +493,62 @@ function viewCourier(){
   html += `<details><summary>🍽️ إدارة المنيو</summary><div class="inner">${menuAdmin(v)}</div></details>
     <div class="btns" style="justify-content:center"><button class="btn o sm" data-act="logout">خروج من منطقة مسئول التوصيل</button></div>`;
   return html;
+}
+
+function receiptStats(v){
+  const o = cv(v), bought = {}, extra = [];
+  (o.receipts || []).forEach(r => r.lines.forEach(l => {
+    if (l.match) { const k = normKey(l.match); bought[k] = (bought[k] || 0) + l.qty; }
+    else extra.push(l);
+  }));
+  const missing = groupByItem(o.lines).map(g => ({ item: g.item, need: g.qty - (bought[normKey(g.item)] || 0) })).filter(x => x.need > 0);
+  return { has: (o.receipts || []).length > 0, bought, missing, extra };
+}
+
+function receiptCard(v){
+  const o = cv(v), st = receiptStats(v);
+  let html = '';
+  if (st.has && st.missing.length)
+    html += `<div class="alert bad">⚠️ لسه فيه حاجات ناقصة مجبتهاش:<ul>${st.missing.map(m => `<li>${esc(m.item)} × ${m.need}</li>`).join('')}</ul></div>`;
+  else if (st.has)
+    html += `<div class="alert good">✅ كل الأصناف المطلوبة موجودة في الريسيتات</div>`;
+  html += `<div class="card"><h2>🧾 ريسيت المشتريات <span class="cnt">${(o.receipts||[]).length}</span></h2>
+    <p class="hint" style="margin:-4px 0 8px;color:var(--muted);font-weight:600;font-size:13px">صوّر الريسيت وارفعه، والأسعار هتتحدث لوحدها وهتعرف إيه اللي ناقص. تقدر ترفع أكتر من ريسيت.</p>
+    ${(o.receipts||[]).map((r, i) => `<div class="row"><div class="qty" style="background:var(--mint)">${i+1}</div>
+      <div><div class="nm">${r.lines.length} سطر${r.total!=null?` · إجمالي ${fmt(r.total)}`:''}</div>
+      <div class="sub">${esc(r.at.slice(11,16))}${r.fee?` · توصيل ${fmt(r.fee)}`:''}${r.lines.some(l=>!l.match)?` · ${r.lines.filter(l=>!l.match).length} مش من الأوردر`:''}</div></div>
+      <div class="end"><button class="x" data-act="delReceipt" data-id="${esc(r.id)}">✕</button></div></div>`).join('')}
+    ${st.extra.length ? `<div class="sub" style="margin-top:8px;font-weight:700;color:#8a3f00">📎 في الريسيت حاجات مش في الأوردر: ${st.extra.map(l => esc(l.name)+' ('+fmt(l.lineTotal)+')').join('، ')}</div>` : ''}
+    <label class="btn g full rbtn" style="margin-top:12px" id="scanLbl">📷 ارفع صورة ريسيت
+      <input type="file" id="rfile" accept="image/*" multiple></label></div>`;
+  return html;
+}
+
+async function fileToJpeg(file){
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((ok, bad) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => bad(new Error('مقدرتش أفتح الصورة')); i.src = url; });
+    const sc = Math.min(1, 1800 / Math.max(img.width, img.height));
+    const c = document.createElement('canvas'); c.width = Math.round(img.width * sc); c.height = Math.round(img.height * sc);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    return c.toDataURL('image/jpeg', 0.85).split(',')[1];
+  } finally { URL.revokeObjectURL(url); }
+}
+
+async function scanFiles(files){
+  const v = S.vendor, rd = cv(v).round;
+  for (const f of files) {
+    const lbl = $('#scanLbl'); if (lbl) lbl.innerHTML = '<span class="spin">🧾</span> بقرا الريسيت… ثواني';
+    try {
+      const b64 = await fileToJpeg(f);
+      const r = await courier('courierScanReceipt', v, rd, b64, 'image/jpeg');
+      toast(`اتقرا ${r.lines} سطر وتحدّثت الأسعار ✅`);
+    } catch(e) { /* اتعرض */ }
+    await refresh(true);
+    const typed = S.prices[pk(v)], st = receiptStats(v);
+    if (typed) Object.keys(st.bought).forEach(k => delete typed[k]);
+    render();
+  }
 }
 
 function roundsBar(v){
@@ -647,9 +714,11 @@ document.addEventListener('click', async e => {
       }
       case 'logout': S.pin = null; sessionSet('hm_pin', null); render(); break;
       case 'reload': await refresh(); toast('اتحدّث ✅'); break;
+      case 'delReceipt': if (confirm('تمسح الريسيت ده من المراجعة؟ (الأسعار اللي اتحدثت هتفضل)')) { await courier('courierDeleteReceipt', d.id); await refresh(true); } break;
       case 'vround': S.vr[S.vendor] = +d.v; render(); break;
       case 'newRound': await courier('courierNewRound', S.vendor); S.vr[S.vendor] = null; toast('بدأت جولة جديدة 🟢'); await refresh(true); break;
-      case 'status': await courier('courierSetStatus', S.vendor, d.v, cv(S.vendor).round); await refresh(true); break;
+      case 'status': if (d.v === 'done') { const m = receiptStats(S.vendor); if (m.has && m.missing.length && !confirm('لسه فيه حاجات ناقصة: ' + m.missing.map(x => x.item + ' ×' + x.need).join('، ') + '\nتكمل برضو؟')) break; }
+        await courier('courierSetStatus', S.vendor, d.v, cv(S.vendor).round); await refresh(true); break;
       case 'saveprices': await savePrices(); toast('اتحفظ ✅'); await refresh(true); break;
       case 'paid': await courier('courierSetPaid', S.vendor, d.uk, d.v === '1', cv(S.vendor).round); await refresh(true); break;
       case 'copyList': copyText(listText()); break;
@@ -671,6 +740,7 @@ document.addEventListener('input', e => {
   else if (t.id === 'fee') { S.fee[pk(S.vendor)] = t.value; liveBills(); }
   else if (t.dataset.note !== undefined) S.cart[t.dataset.note].note = t.value;
 });
+document.addEventListener('change', e => { if (e.target.id === 'rfile' && e.target.files.length) { const fs = [...e.target.files]; e.target.value = ''; scanFiles(fs); } });
 document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'pin') document.querySelector('[data-act=login]').click(); });
 
 function liveBills(){ const v = S.vendor; if ($('#bills')) { $('#bills').innerHTML = billsHtml(v); $('#sum').innerHTML = sumHtml(v); } }

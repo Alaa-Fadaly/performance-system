@@ -13,7 +13,8 @@ var SCHEMA_ = {
   Menu:   ['id', 'vendor', 'category', 'name', 'price', 'emoji', 'active', 'desc'],
   Orders: ['id', 'date', 'vendor', 'status', 'fee', 'createdAt', 'round'],
   Lines:  ['id', 'orderId', 'userId', 'userName', 'floor', 'office', 'item', 'qty',
-           'estPrice', 'actualPrice', 'note', 'paid', 'createdAt', 'cat']
+           'estPrice', 'actualPrice', 'note', 'paid', 'createdAt', 'cat'],
+  Receipts: ['id', 'orderId', 'createdAt', 'data']
 };
 
 // [vendor, category, name, price, emoji]
@@ -281,6 +282,7 @@ function getState(userId) {
     });
   var orders = read_('Orders').filter(function (o) { return dateStr_(o.date) === today; });
   var lines = read_('Lines');
+  var receipts = read_('Receipts');
   var myKey = userId ? ukey_(userId) : '';
   var out = {};
   VENDORS_.forEach(function (v) {
@@ -289,6 +291,7 @@ function getState(userId) {
       .map(function (o) {
         return {
           round: roundOf_(o), status: o.status, fee: num_(o.fee),
+          receipts: receipts.filter(function (r) { return r.orderId === o.id; }).map(receiptOut_),
           lines: lines.filter(function (l) { return l.orderId === o.id; }).map(function (l) {
             var uk = ukey_(l.userId);
             return {
@@ -304,6 +307,12 @@ function getState(userId) {
     out[v] = { rounds: rounds.length ? rounds : [{ round: 1, status: 'open', fee: 0, lines: [] }] };
   });
   return { today: today, menu: menu, orders: out };
+}
+
+function receiptOut_(r) {
+  var d = {};
+  try { d = JSON.parse(str_(r.data)); } catch (e) {}
+  return { id: r.id, at: str_(r.createdAt), lines: d.lines || [], fee: num_(d.fee), total: d.total == null ? null : num_(d.total) };
 }
 
 function cleanProfile_(p) {
@@ -471,6 +480,118 @@ function courierNewRound(pin, vendor) {
     var list = todayOrders_(vendor);
     if (list.length && list[list.length - 1].status === 'open') throw new Error('الجولة الحالية لسه مفتوحة');
     createOrder_(vendor, list.length ? roundOf_(list[list.length - 1]) + 1 : 1);
+    return true;
+  });
+}
+
+/* ----------------------- قراءة الريسيت بالذكاء الاصطناعي ----------------------- */
+
+function numAr_(v) {
+  return num_(str_(v).replace(/[٠-٩]/g, function (d) { return '٠١٢٣٤٥٦٧٨٩'.indexOf(d); }).replace(/٫/g, '.').replace(/[^\d.\-]/g, ''));
+}
+
+// بيحوّل رد الموديل لبيانات نضيفة، وبيتأكد إن كل "match" هو صنف فعلاً في الأوردر
+function normalizeReceipt_(text, itemNames) {
+  var a = text.indexOf('{'), b = text.lastIndexOf('}');
+  if (a < 0 || b < a) throw new Error('مقدرتش أقرا الريسيت، جرب صورة أوضح');
+  var raw;
+  try { raw = JSON.parse(text.slice(a, b + 1)); } catch (e) { throw new Error('مقدرتش أقرا الريسيت، جرب صورة أوضح'); }
+  if (raw.readable === false) throw new Error('الصورة دي مش واضح إنها ريسيت');
+  var valid = {};
+  itemNames.forEach(function (n) { valid[norm_(n)] = n; });
+  var lines = (raw.lines || []).map(function (l) {
+    var qty = numAr_(l.qty) > 0 ? numAr_(l.qty) : 1;
+    var m = l.match == null ? '' : valid[norm_(l.match)];
+    return { name: norm_(l.name).slice(0, 80), qty: qty, lineTotal: Math.max(0, numAr_(l.lineTotal)), match: m || null };
+  }).filter(function (l) { return l.name; });
+  if (!lines.length) throw new Error('مفيش أصناف ظاهرة في الريسيت');
+  return { lines: lines, fee: Math.max(0, numAr_(raw.deliveryFee)), total: raw.total == null ? null : numAr_(raw.total) };
+}
+
+function callClaudeReceipt_(b64, mime, itemNames) {
+  var props = PropertiesService.getScriptProperties();
+  var key = props.getProperty('ANTHROPIC_API_KEY');
+  if (!key) throw new Error('لازم تضيف ANTHROPIC_API_KEY في Script properties الأول');
+  var model = props.getProperty('CLAUDE_MODEL') || 'claude-sonnet-5-5';
+  var prompt =
+    'دي صورة ريسيت (فاتورة) من مطعم أو سوبرماركت في مصر، ممكن تكون عربي أو إنجليزي.\n' +
+    'اقرا كل سطر مشتريات. وقارنه بقايمة الأصناف المطلوبة دي (JSON): ' + JSON.stringify(itemNames) + '\n' +
+    'رجّع JSON بس من غير أي كلام تاني بالشكل ده:\n' +
+    '{"readable":true,"lines":[{"name":"الاسم زي ما في الريسيت","qty":1,"lineTotal":0,"match":"اسم من القايمة بالظبط أو null"}],"deliveryFee":null,"total":null}\n' +
+    'قواعد: lineTotal هو إجمالي السطر كله (الكمية × سعر الوحدة) بالجنيه المصري. حوّل الأرقام العربية (٠-٩) لأرقام عادية. ' +
+    'لو الكمية مش مكتوبة اعتبرها 1. match لازم يكون واحد من أسماء القايمة حرفياً لو السطر ده نفس الصنف (حتى لو الاسم مختلف شوية مثل "فول زيت" = "فول بالزيت الحار")، وإلا null. ' +
+    'ماتخترعش أصناف. رسوم التوصيل/الخدمة في deliveryFee ومش في lines. total هو إجمالي الريسيت لو ظاهر. لو الصورة مش ريسيت خلي readable=false.';
+  var res = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
+    method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+    headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01' },
+    payload: JSON.stringify({
+      model: model, max_tokens: 3000,
+      messages: [{ role: 'user', content: [
+        { type: 'image', source: { type: 'base64', media_type: mime, data: b64 } },
+        { type: 'text', text: prompt }
+      ] }]
+    })
+  });
+  var code = res.getResponseCode(), body = res.getContentText();
+  if (code !== 200) {
+    var msg = ''; try { msg = JSON.parse(body).error.message; } catch (e) {}
+    throw new Error('خطأ من خدمة قراءة الريسيت (' + code + ') ' + msg);
+  }
+  var out = JSON.parse(body), text = '';
+  (out.content || []).forEach(function (c) { if (c.type === 'text') text += c.text; });
+  return text;
+}
+
+// بيحسب سعر الوحدة الفعلي من كل ريسيتات الجولة ويحدّث الأوردر
+function applyReceiptPrices_(order) {
+  var agg = {}, fee = 0;
+  read_('Receipts').filter(function (r) { return r.orderId === order.id; }).forEach(function (r) {
+    var d; try { d = JSON.parse(str_(r.data)); } catch (e) { return; }
+    fee = Math.max(fee, num_(d.fee));
+    (d.lines || []).forEach(function (l) {
+      if (!l.match) return;
+      var k = norm_(l.match), a = agg[k] || (agg[k] = { qty: 0, total: 0 });
+      a.qty += num_(l.qty); a.total += num_(l.lineTotal);
+    });
+  });
+  var sh = getDb_().getSheetByName('Lines'), h = SCHEMA_.Lines, last = sh.getLastRow();
+  if (last >= 2) {
+    var rng = sh.getRange(2, 1, last - 1, h.length), vals = rng.getValues();
+    var iO = h.indexOf('orderId'), iI = h.indexOf('item'), iA = h.indexOf('actualPrice');
+    vals.forEach(function (r) {
+      if (r[iO] !== order.id) return;
+      var a = agg[norm_(r[iI])];
+      if (a && a.qty > 0) r[iA] = Math.round(a.total / a.qty * 100) / 100;
+    });
+    rng.setValues(vals);
+  }
+  if (num_(order.fee) === 0 && fee > 0) { order.fee = fee; save_('Orders', order); }
+}
+
+function courierScanReceipt(pin, vendor, round, b64, mime) {
+  checkPin_(pin);
+  checkVendor_(vendor);
+  if (!b64 || b64.length > 7000000) throw new Error('الصورة كبيرة أوي أو فاضية');
+  mime = ['image/jpeg', 'image/png', 'image/webp'].indexOf(mime) >= 0 ? mime : 'image/jpeg';
+  var order = getOrCreateOrder_(vendor, round);
+  var names = {};
+  read_('Lines').forEach(function (l) { if (l.orderId === order.id) names[norm_(l.item)] = true; });
+  var itemNames = Object.keys(names);
+  if (!itemNames.length) throw new Error('مفيش طلبات في الجولة دي');
+  var data = normalizeReceipt_(callClaudeReceipt_(b64, mime, itemNames), itemNames);
+  return withLock_(function () {
+    append_('Receipts', { id: newId_('r_'), orderId: order.id, createdAt: now_(), data: JSON.stringify(data) });
+    var fresh = getOrCreateOrder_(vendor, round);
+    applyReceiptPrices_(fresh);
+    return { lines: data.lines.length, unmatched: data.lines.filter(function (l) { return !l.match; }).length };
+  });
+}
+
+function courierDeleteReceipt(pin, id) {
+  checkPin_(pin);
+  return withLock_(function () {
+    var r = read_('Receipts').filter(function (x) { return x.id === id; })[0];
+    if (r) getDb_().getSheetByName('Receipts').deleteRow(r._r);
     return true;
   });
 }
