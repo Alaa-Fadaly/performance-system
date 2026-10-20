@@ -263,6 +263,11 @@ function getOrCreateOrder_(vendor, round) {
   return list.length ? list[list.length - 1] : createOrder_(vendor, 1);
 }
 
+function isPin_(pin) {
+  var real = PropertiesService.getScriptProperties().getProperty('COURIER_PIN') || '1234';
+  return !!pin && str_(pin) === real;
+}
+
 function checkPin_(pin) {
   var real = PropertiesService.getScriptProperties().getProperty('COURIER_PIN') || '1234';
   if (str_(pin) !== real) {
@@ -273,7 +278,8 @@ function checkPin_(pin) {
 
 /* ------------------------------ للموظفين ------------------------------ */
 
-function getState(userId) {
+function getState(userId, pin) {
+  var isC = isPin_(pin);
   var today = todayStr_();
   var menu = read_('Menu').filter(function (m) { return str_(m.active) !== '0'; })
     .map(function (m) {
@@ -291,8 +297,9 @@ function getState(userId) {
       .map(function (o) {
         return {
           round: roundOf_(o), status: o.status, fee: num_(o.fee),
-          receipts: receipts.filter(function (r) { return r.orderId === o.id; }).map(receiptOut_),
-          lines: lines.filter(function (l) { return l.orderId === o.id; }).map(function (l) {
+          receipts: isC ? receipts.filter(function (r) { return r.orderId === o.id; }).map(receiptOut_) : [],
+          people: Object.keys(lines.filter(function (l) { return l.orderId === o.id; }).reduce(function (a, l) { a[l.userId] = 1; return a; }, {})).length,
+          lines: lines.filter(function (l) { return l.orderId === o.id && (isC || (userId && l.userId === userId)); }).map(function (l) {
             var uk = ukey_(l.userId);
             return {
               id: l.id, uk: uk, mine: uk === myKey, name: l.userName,
@@ -426,6 +433,77 @@ function updateMenuPrices_(vendor, prices) {
     var p = num_(prices[k]);
     if (p > 0 && p !== num_(m.price)) { m.price = p; save_('Menu', m); }
   });
+}
+
+/* ------------------------------- الإحصائيات ------------------------------- */
+
+function courierStats(pin, days) {
+  checkPin_(pin);
+  days = [7, 30, 90].indexOf(Number(days)) >= 0 ? Number(days) : 30;
+  var cutoff = Utilities.formatDate(new Date(Date.now() - (days - 1) * 86400000), TZ_, 'yyyy-MM-dd');
+  var orders = {}, byOrder = {};
+  read_('Orders').forEach(function (o) { orders[o.id] = o; });
+  read_('Lines').forEach(function (l) {
+    if (orders[l.orderId]) (byOrder[l.orderId] = byOrder[l.orderId] || []).push(l);
+  });
+  var daily = {}, items = {}, people = {}, breads = {}, unpaid = {}, ppl = {};
+  var vendors = { foul: { spend: 0, qty: 0 }, super: { spend: 0, qty: 0 } };
+  var t = { spend: 0, fees: 0, rounds: 0, qty: 0 };
+  Object.keys(byOrder).forEach(function (oid) {
+    var o = orders[oid], date = dateStr_(o.date), ls = byOrder[oid], fee = num_(o.fee), users = {};
+    ls.forEach(function (l) {
+      var price = str_(l.actualPrice) === '' ? num_(l.estPrice) : num_(l.actualPrice);
+      var u = users[l.userId] || (users[l.userId] = { sub: 0, paid: true, l: l });
+      u.sub += num_(l.qty) * price;
+      if (str_(l.paid) !== '1') u.paid = false;
+    });
+    var uids = Object.keys(users), share = uids.length ? fee / uids.length : 0;
+    if (o.status === 'done') uids.forEach(function (id) { // اللي لسه مادفعش (كل الأيام)
+      var u = users[id]; if (u.paid) return;
+      var a = unpaid[id] || (unpaid[id] = { name: u.l.userName, floor: num_(u.l.floor), office: str_(u.l.office), amount: 0, orders: 0 });
+      a.amount += u.sub + share; a.orders++;
+    });
+    if (date < cutoff) return;
+    t.rounds++; t.fees += fee;
+    var dd = daily[date] || (daily[date] = { spend: 0, people: {} });
+    dd.spend += fee;
+    var v = vendors[o.vendor]; if (v) v.spend += fee;
+    ls.forEach(function (l) {
+      var price = str_(l.actualPrice) === '' ? num_(l.estPrice) : num_(l.actualPrice), qty = num_(l.qty), amt = qty * price;
+      t.spend += amt; t.qty += qty; dd.spend += amt; dd.people[l.userId] = 1; ppl[l.userId] = 1;
+      if (v) { v.spend += amt; v.qty += qty; }
+      var k = norm_(l.item), it = items[k] || (items[k] = { item: l.item, cat: str_(l.cat), qty: 0, spend: 0 });
+      it.qty += qty; it.spend += amt;
+      if (str_(l.bread)) breads[l.bread] = (breads[l.bread] || 0) + qty;
+    });
+    uids.forEach(function (id) {
+      var u = users[id], p = people[id] || (people[id] = { name: u.l.userName, floor: num_(u.l.floor), office: str_(u.l.office), spend: 0, days: {} });
+      p.spend += u.sub + share; p.days[date] = 1;
+    });
+  });
+  t.spend += t.fees;
+  var series = [];
+  for (var i = days - 1; i >= 0; i--) {
+    var d = Utilities.formatDate(new Date(Date.now() - i * 86400000), TZ_, 'yyyy-MM-dd');
+    series.push({ date: d, spend: daily[d] ? Math.round(daily[d].spend * 100) / 100 : 0, people: daily[d] ? Object.keys(daily[d].people).length : 0 });
+  }
+  var round2 = function (n) { return Math.round(n * 100) / 100; };
+  var unpaidList = Object.keys(unpaid).map(function (k) { var a = unpaid[k]; a.amount = round2(a.amount); return a; })
+    .sort(function (a, b) { return b.amount - a.amount; });
+  return {
+    days: days,
+    totals: { spend: round2(t.spend), fees: round2(t.fees), rounds: t.rounds, qty: t.qty,
+              people: Object.keys(ppl).length, activeDays: series.filter(function (s) { return s.spend > 0; }).length },
+    daily: series,
+    vendors: { foul: { spend: round2(vendors.foul.spend), qty: vendors.foul.qty }, super: { spend: round2(vendors.super.spend), qty: vendors.super.qty } },
+    topItems: Object.keys(items).map(function (k) { var x = items[k]; x.spend = round2(x.spend); return x; })
+      .sort(function (a, b) { return b.qty - a.qty; }).slice(0, 10),
+    topPeople: Object.keys(people).map(function (k) { var p = people[k]; return { name: p.name, floor: p.floor, office: p.office, spend: round2(p.spend), days: Object.keys(p.days).length }; })
+      .sort(function (a, b) { return b.spend - a.spend; }).slice(0, 10),
+    breads: breads,
+    unpaid: unpaidList,
+    unpaidTotal: round2(unpaidList.reduce(function (a, x) { return a + x.amount; }, 0))
+  };
 }
 
 function courierSetStatus(pin, vendor, status, round) {
