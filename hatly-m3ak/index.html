@@ -108,6 +108,9 @@ nav button.on .e{transform:scale(1.2) rotate(-6deg)}
 .row .sub{font-size:12.5px;color:var(--muted);font-weight:600}
 .row .end{margin-inline-start:auto;text-align:left;font-weight:800;display:flex;align-items:center;gap:8px}
 .qty{background:var(--pink);color:#fff;border-radius:12px;min-width:34px;height:34px;display:grid;place-items:center;font-weight:900;flex:none;padding:0 6px}
+.kind{display:flex;justify-content:space-between;align-items:center;border-radius:12px;padding:6px 12px;margin:10px 0 2px;font-weight:900;font-size:14px}
+.kind span{background:var(--ink);color:#fff;border-radius:999px;padding:0 10px;font-size:13px}
+.tag{display:inline-block;background:#EFE9FF;color:var(--purple);border-radius:999px;padding:1px 8px;font-size:11px;font-weight:800;vertical-align:middle}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .chip{background:#EFE9FF;border-radius:999px;padding:3px 10px;font-size:12.5px;font-weight:700}
 .chip.me{background:var(--yellow)}
@@ -413,11 +416,19 @@ function viewGroup(){
   return html;
 }
 
+const isSand = (cat, name) => /س[اَ]?ندوتش/.test(cat || '') || cat === 'بيض وجبن ومقليات' || /س[اَ]?ندوتش/.test(name || '');
+function catOf(l, v){
+  if (l.cat) return l.cat;
+  const m = S.menu.find(x => (!v || x.vendor === v) && normKey(x.name) === normKey(l.item));
+  return m ? m.category : '';
+}
+function kindOf(g){ return isSand(g.cat, g.item) ? 'sand' : 'other'; }
+
 function groupByItem(lines){
   const map = new Map();
   lines.forEach(l => {
     const k = normKey(l.item);
-    if (!map.has(k)) map.set(k, { item:l.item, qty:0, people:[] });
+    if (!map.has(k)) map.set(k, { item:l.item, qty:0, people:[], cat: catOf(l) });
     const g = map.get(k); g.qty += l.qty;
     const p = g.people.find(x => x.uk === l.uk && x.note === l.note);
     if (p) p.qty += l.qty; else g.people.push({ uk:l.uk, name:l.name, floor:l.floor, office:l.office, qty:l.qty, note:l.note, mine:l.mine });
@@ -448,9 +459,13 @@ function viewCourier(){
   html += `<div class="card"><h2>📋 اللي هتطلبه <span class="cnt">${items.reduce((a,g)=>a+g.qty,0)}</span>
     ${items.length?`<button class="btn sm y" style="margin-inline-start:6px" data-act="copyList">نسخ</button>`:''}</h2>`;
   if (!items.length) html += `<div class="empty"><span class="e">🦗</span>لسه مفيش طلبات</div>`;
-  else html += items.map(g => `<div class="row" style="align-items:flex-start"><div class="qty">${g.qty}</div><div style="flex:1">
-      <div class="nm">${esc(g.item)}</div><div class="chips">${g.people.map(p =>
+  else html += [['sand','🥙 سندوتشات','#FFE9A8'],['other','🍽️ أطباق وطلبات تانية','#D6E4FF']].map(([k,t,c]) => {
+    const gs = items.filter(g => kindOf(g) === k); if (!gs.length) return '';
+    return `<div class="kind" style="background:${c}">${t}<span>${gs.reduce((a,g)=>a+g.qty,0)}</span></div>` + gs.map(g =>
+      `<div class="row" style="align-items:flex-start"><div class="qty">${g.qty}</div><div style="flex:1">
+      <div class="nm">${esc(g.item)}${g.cat?` <span class="tag">${esc(g.cat)}</span>`:''}</div><div class="chips">${g.people.map(p =>
       `<span class="chip">${esc(p.name)} ×${p.qty}${p.note?` <small>(${esc(p.note)})</small>`:''}</span>`).join('')}</div></div></div>`).join('');
+  }).join('');
   html += '</div>';
 
   if (items.length) {
@@ -674,7 +689,9 @@ async function savePrices(){
 
 function listText(){
   const v = S.vendor;
-  return `طلب ${VENDORS[v].name}${rounds(v).length>1?' (جولة '+cv(v).round+')':''}:\n` + groupByItem(cv(v).lines).map(g => `• ${g.item} × ${g.qty}`).join('\n');
+  const gs = groupByItem(cv(v).lines);
+  const sec = (k, t) => { const a = gs.filter(g => kindOf(g) === k); return a.length ? `\n${t}:\n` + a.map(g => `• ${g.item} × ${g.qty}`).join('\n') : ''; };
+  return `طلب ${VENDORS[v].name}${rounds(v).length>1?' (جولة '+cv(v).round+')':''}:` + sec('sand', '🥙 سندوتشات') + sec('other', '🍽️ أطباق وطلبات تانية');
 }
 function billsText(){
   const v = S.vendor;
