@@ -11,7 +11,7 @@ var VENDORS_ = ['foul', 'super'];
 var SCHEMA_ = {
   Users:  ['id', 'name', 'floor', 'office', 'phone', 'createdAt'],
   Menu:   ['id', 'vendor', 'category', 'name', 'price', 'emoji', 'active'],
-  Orders: ['id', 'date', 'vendor', 'status', 'fee', 'createdAt'],
+  Orders: ['id', 'date', 'vendor', 'status', 'fee', 'createdAt', 'round'],
   Lines:  ['id', 'orderId', 'userId', 'userName', 'floor', 'office', 'item', 'qty',
            'estPrice', 'actualPrice', 'note', 'paid', 'createdAt']
 };
@@ -116,7 +116,14 @@ function ensureSchema_(ss) {
   var created = false;
   Object.keys(SCHEMA_).forEach(function (name) {
     var sh = ss.getSheetByName(name);
-    if (sh) return;
+    if (sh) {
+      var hh = SCHEMA_[name], cur = sh.getRange(1, 1, 1, hh.length).getValues()[0];
+      if (cur.some(function (c) { return c === ''; })) { // عمود جديد اتضاف في تحديث
+        sh.getRange(1, 1, sh.getMaxRows(), hh.length).setNumberFormat('@');
+        sh.getRange(1, 1, 1, hh.length).setValues([hh]).setFontWeight('bold').setBackground('#FFE08A');
+      }
+      return;
+    }
     sh = ss.insertSheet(name);
     var h = SCHEMA_[name];
     sh.getRange(1, 1, sh.getMaxRows(), h.length).setNumberFormat('@');
@@ -190,15 +197,31 @@ function checkVendor_(v) {
   if (VENDORS_.indexOf(v) < 0) throw new Error('المحل مش معروف');
 }
 
-function getOrCreateOrder_(vendor) {
+function roundOf_(o) { return num_(o.round) || 1; }
+
+function todayOrders_(vendor) {
   var today = todayStr_();
-  var found = read_('Orders').filter(function (o) {
+  return read_('Orders').filter(function (o) {
     return dateStr_(o.date) === today && o.vendor === vendor;
-  })[0];
-  if (found) return found;
-  var o = { id: newId_('o_'), date: today, vendor: vendor, status: 'open', fee: 0, createdAt: now_() };
+  }).sort(function (a, b) { return roundOf_(a) - roundOf_(b); });
+}
+
+function createOrder_(vendor, round) {
+  var o = { id: newId_('o_'), date: todayStr_(), vendor: vendor, status: 'open', fee: 0,
+            createdAt: now_(), round: round };
   append_('Orders', o);
   return read_('Orders').filter(function (x) { return x.id === o.id; })[0];
+}
+
+// آخر جولة النهاردة (أو بتتعمل الأولى). لو round اتحدد بترجع الجولة دي.
+function getOrCreateOrder_(vendor, round) {
+  var list = todayOrders_(vendor);
+  if (round) {
+    var r = list.filter(function (o) { return roundOf_(o) === Number(round); })[0];
+    if (!r) throw new Error('الجولة مش موجودة');
+    return r;
+  }
+  return list.length ? list[list.length - 1] : createOrder_(vendor, 1);
 }
 
 function checkPin_(pin) {
@@ -223,22 +246,24 @@ function getState(userId) {
   var myKey = userId ? ukey_(userId) : '';
   var out = {};
   VENDORS_.forEach(function (v) {
-    var o = orders.filter(function (x) { return x.vendor === v; })[0];
-    var ls = o ? lines.filter(function (l) { return l.orderId === o.id; }) : [];
-    out[v] = {
-      status: o ? o.status : 'open',
-      fee: o ? num_(o.fee) : 0,
-      lines: ls.map(function (l) {
-        var uk = ukey_(l.userId);
+    var rounds = orders.filter(function (x) { return x.vendor === v; })
+      .sort(function (a, b) { return roundOf_(a) - roundOf_(b); })
+      .map(function (o) {
         return {
-          id: l.id, uk: uk, mine: uk === myKey, name: l.userName,
-          floor: num_(l.floor), office: str_(l.office), item: l.item, qty: num_(l.qty),
-          estPrice: num_(l.estPrice),
-          actualPrice: str_(l.actualPrice) === '' ? null : num_(l.actualPrice),
-          note: str_(l.note), paid: str_(l.paid) === '1'
+          round: roundOf_(o), status: o.status, fee: num_(o.fee),
+          lines: lines.filter(function (l) { return l.orderId === o.id; }).map(function (l) {
+            var uk = ukey_(l.userId);
+            return {
+              id: l.id, uk: uk, mine: uk === myKey, name: l.userName,
+              floor: num_(l.floor), office: str_(l.office), item: l.item, qty: num_(l.qty),
+              estPrice: num_(l.estPrice),
+              actualPrice: str_(l.actualPrice) === '' ? null : num_(l.actualPrice),
+              note: str_(l.note), paid: str_(l.paid) === '1'
+            };
+          })
         };
-      })
-    };
+      });
+    out[v] = { rounds: rounds.length ? rounds : [{ round: 1, status: 'open', fee: 0, lines: [] }] };
   });
   return { today: today, menu: menu, orders: out };
 }
@@ -317,14 +342,14 @@ function getHistory(userId) {
     if (l.userId !== userId) return;
     var o = orders[l.orderId]; if (!o) return;
     var date = dateStr_(o.date); if (date < cutoff) return;
-    var key = date + '|' + o.vendor;
-    var g = groups[key] || (groups[key] = { date: date, vendor: o.vendor, items: [], total: 0 });
+    var key = date + '|' + o.vendor + '|' + roundOf_(o);
+    var g = groups[key] || (groups[key] = { date: date, vendor: o.vendor, round: roundOf_(o), items: [], total: 0 });
     var price = str_(l.actualPrice) === '' ? num_(l.estPrice) : num_(l.actualPrice);
     g.items.push({ item: l.item, qty: num_(l.qty), note: str_(l.note), price: price });
     g.total += num_(l.qty) * price;
   });
   return Object.keys(groups).map(function (k) { return groups[k]; })
-    .sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
+    .sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : b.round - a.round; });
 }
 
 function deleteLine(userId, lineId) {
@@ -342,12 +367,16 @@ function deleteLine(userId, lineId) {
 
 function courierLogin(pin) { checkPin_(pin); return true; }
 
-function courierSetStatus(pin, vendor, status) {
+function courierSetStatus(pin, vendor, status, round) {
   checkPin_(pin);
   return withLock_(function () {
     checkVendor_(vendor);
     if (['open', 'closed', 'done'].indexOf(status) < 0) throw new Error('حالة غلط');
-    var o = getOrCreateOrder_(vendor);
+    var o = getOrCreateOrder_(vendor, round);
+    if (status === 'open') {
+      var list = todayOrders_(vendor);
+      if (list[list.length - 1].id !== o.id) throw new Error('تقدر تفتح آخر جولة بس');
+    }
     o.status = status;
     save_('Orders', o);
     return true;
@@ -355,11 +384,11 @@ function courierSetStatus(pin, vendor, status) {
 }
 
 // prices: { "اسم الصنف": سعر الوحدة الفعلي }
-function courierSave(pin, vendor, prices, fee) {
+function courierSave(pin, vendor, prices, fee, round) {
   checkPin_(pin);
   return withLock_(function () {
     checkVendor_(vendor);
-    var o = getOrCreateOrder_(vendor);
+    var o = getOrCreateOrder_(vendor, round);
     o.fee = Math.max(0, num_(fee));
     save_('Orders', o);
     var sh = getDb_().getSheetByName('Lines'), h = SCHEMA_.Lines, last = sh.getLastRow();
@@ -378,11 +407,11 @@ function courierSave(pin, vendor, prices, fee) {
   });
 }
 
-function courierSetPaid(pin, vendor, uk, paid) {
+function courierSetPaid(pin, vendor, uk, paid, round) {
   checkPin_(pin);
   return withLock_(function () {
     checkVendor_(vendor);
-    var o = getOrCreateOrder_(vendor);
+    var o = getOrCreateOrder_(vendor, round);
     var sh = getDb_().getSheetByName('Lines'), h = SCHEMA_.Lines, last = sh.getLastRow();
     if (last < 2) return true;
     var rng = sh.getRange(2, 1, last - 1, h.length), vals = rng.getValues();
@@ -391,6 +420,17 @@ function courierSetPaid(pin, vendor, uk, paid) {
       if (r[iO] === o.id && ukey_(r[iU]) === uk) r[iP] = paid ? 1 : 0;
     });
     rng.setValues(vals);
+    return true;
+  });
+}
+
+function courierNewRound(pin, vendor) {
+  checkPin_(pin);
+  return withLock_(function () {
+    checkVendor_(vendor);
+    var list = todayOrders_(vendor);
+    if (list.length && list[list.length - 1].status === 'open') throw new Error('الجولة الحالية لسه مفتوحة');
+    createOrder_(vendor, list.length ? roundOf_(list[list.length - 1]) + 1 : 1);
     return true;
   });
 }
