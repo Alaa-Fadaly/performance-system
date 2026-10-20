@@ -10,7 +10,7 @@ var VENDORS_ = ['foul', 'super'];
 
 var SCHEMA_ = {
   Users:  ['id', 'name', 'floor', 'office', 'phone', 'createdAt'],
-  Menu:   ['id', 'vendor', 'category', 'name', 'price', 'emoji', 'active'],
+  Menu:   ['id', 'vendor', 'category', 'name', 'price', 'emoji', 'active', 'desc'],
   Orders: ['id', 'date', 'vendor', 'status', 'fee', 'createdAt', 'round'],
   Lines:  ['id', 'orderId', 'userId', 'userName', 'floor', 'office', 'item', 'qty',
            'estPrice', 'actualPrice', 'note', 'paid', 'createdAt']
@@ -18,16 +18,6 @@ var SCHEMA_ = {
 
 // [vendor, category, name, price, emoji]
 var SEED_MENU_ = [
-  ['foul', 'ساندوتشات', 'فول بالزيت', 10, '🫘'],
-  ['foul', 'ساندوتشات', 'فول بالطحينة', 12, '🥙'],
-  ['foul', 'ساندوتشات', 'فول إسكندراني', 12, '🌶️'],
-  ['foul', 'ساندوتشات', 'طعمية', 8, '🧆'],
-  ['foul', 'ساندوتشات', 'طعمية محشية', 12, '🧆'],
-  ['foul', 'ساندوتشات', 'بيض مقلي', 15, '🍳'],
-  ['foul', 'ساندوتشات', 'باذنجان مقلي', 12, '🍆'],
-  ['foul', 'ساندوتشات', 'بطاطس', 10, '🍟'],
-  ['foul', 'ساندوتشات', 'جبنة بيضاء بالطماطم', 12, '🍅'],
-  ['foul', 'ساندوتشات', 'جبنة رومي', 20, '🧀'],
   ['foul', 'أطباق', 'طبق فول', 20, '🥣'],
   ['foul', 'أطباق', 'طبق طعمية (٥ حبات)', 15, '🧆'],
   ['foul', 'أطباق', 'طبق بيض عيون', 20, '🍳'],
@@ -68,6 +58,39 @@ var CIG_SEED_ = [
   ['فاين', 45], ['سوبر سنتر', 40]
 ];
 
+
+// سندوتشات مطعم الفول والطعمية — [قسم, اسم, وصف, سعر, إيموجي] (الأسعار تقريبية وتتعدل من إدارة المنيو)
+var FOUL_SANDWICHES_ = [
+  ['سندوتشات فول', 'فول بالزيت الحار', 'فول مدمس بزيت حار وليمون وكمون', 12, '🫘'],
+  ['سندوتشات فول', 'فول بالسمنة البلدي', 'مدمس بسمنة بلدي وكمون', 14, '🫘'],
+  ['سندوتشات فول', 'فول بالطحينة', 'فول بطحينة وليمون', 14, '🥙'],
+  ['سندوتشات فول', 'فول إسكندراني', 'بالطماطم والفلفل والثوم والكمون', 14, '🌶️'],
+  ['سندوتشات فول', 'فول بالزبدة', 'فول سخن بزبدة', 16, '🧈'],
+  ['سندوتشات فول', 'فول بالبيض المقلي', 'فول مع بيض مقلي', 18, '🍳'],
+  ['سندوتشات فول', 'فول بالسوسيس', 'فول مع سوسيس مقطع', 20, '🌭'],
+  ['سندوتشات فول', 'فول بالسجق', 'فول مع سجق بلدي', 22, '🌭'],
+  ['سندوتشات فول', 'فول بالبسطرمة', 'فول مع بسطرمة', 22, '🥓'],
+  ['سندوتشات طعمية', 'طعمية سادة', 'طعمية خضراء بالكزبرة والشبت', 10, '🧆'],
+  ['سندوتشات طعمية', 'طعمية بالباذنجان', 'طعمية مع باذنجان مقلي', 14, '🍆'],
+  ['سندوتشات طعمية', 'طعمية بالطحينة والسلطة', 'مع طحينة وسلطة وطماطم', 13, '🥗'],
+  ['سندوتشات طعمية', 'طعمية محشية', 'محشية بالدقة والشطة', 14, '🌶️'],
+  ['سندوتشات طعمية', 'طعمية بالبيض', 'طعمية مع بيض مقلي', 17, '🍳'],
+  ['سندوتشات طعمية', 'طعمية بالبسطرمة', 'طعمية مع بسطرمة', 20, '🥓'],
+  ['سندوتشات طعمية', 'طعمية بالجبنة الرومي', 'طعمية مع شرائح رومي', 22, '🧀'],
+  ['سندوتشات ميكس', 'ميكس فول وطعمية', 'نص فول ونص طعمية', 15, '🥙'],
+  ['سندوتشات ميكس', 'ميكس فول وطعمية وبيض', 'فول وطعمية وبيض مقلي', 20, '🍳'],
+  ['سندوتشات ميكس', 'الكبير (فول وطعمية وبيض وبطاطس)', 'السندوتش اللي يشبّعك للعصر', 25, '💪'],
+  ['بيض وجبن ومقليات', 'بيض مسلوق', 'بيضتين مسلوقين بملح وكمون', 12, '🥚'],
+  ['بيض وجبن ومقليات', 'بيض مقلي', 'بيض عيون في سندوتش', 14, '🍳'],
+  ['بيض وجبن ومقليات', 'أومليت بالجبنة', 'أومليت بجبنة رومي', 20, '🧀'],
+  ['بيض وجبن ومقليات', 'بيض بالبسطرمة', 'بيض مقلي مع بسطرمة', 28, '🥓'],
+  ['بيض وجبن ومقليات', 'بطاطس محمرة', 'بطاطس مقلية مقرمشة', 12, '🍟'],
+  ['بيض وجبن ومقليات', 'باذنجان مقلي', 'شرائح باذنجان مقلية بالخل', 14, '🍆'],
+  ['بيض وجبن ومقليات', 'جبنة بيضاء بالطماطم', 'جبنة بيضاء مع طماطم وخيار', 14, '🍅'],
+  ['بيض وجبن ومقليات', 'جبنة رومي', 'شرائح رومي', 22, '🧀'],
+  ['بيض وجبن ومقليات', 'حلاوة طحينية', 'حلاوة بالفستق', 12, '🍯']
+];
+
 var db_ = null;
 
 function doGet() {
@@ -95,6 +118,7 @@ function getDb_() {
   ensureSchema_(ss);
   db_ = ss;
   migrateCigs_();
+  migrateFoul_();
   return ss;
 }
 
@@ -105,11 +129,25 @@ function migrateCigs_() {
   var has = read_('Menu').some(function (m) { return m.category === 'سجاير'; });
   if (!has) {
     var rows = CIG_SEED_.map(function (c) {
-      return [newId_('m_'), 'super', 'سجاير', c[0], c[1], '🚬', 1];
+      return [newId_('m_'), 'super', 'سجاير', c[0], c[1], '🚬', 1, ''];
     });
     sh.getRange(sh.getLastRow() + 1, 1, rows.length, h.length).setNumberFormat('@').setValues(rows);
   }
   props.setProperty('CIGS_SEEDED', '1');
+}
+
+function migrateFoul_() {
+  var props = PropertiesService.getScriptProperties();
+  if (props.getProperty('FOUL_SEEDED_V2')) return;
+  var sh = db_.getSheetByName('Menu'), h = SCHEMA_.Menu;
+  read_('Menu').forEach(function (m) { // شيل السندوتشات القديمة (القسم القديم)
+    if (m.vendor === 'foul' && m.category === 'ساندوتشات' && str_(m.active) !== '0') { m.active = 0; save_('Menu', m); }
+  });
+  var rows = FOUL_SANDWICHES_.map(function (c) {
+    return [newId_('m_'), 'foul', c[0], c[1], c[3], c[4], 1, c[2]];
+  });
+  sh.getRange(sh.getLastRow() + 1, 1, rows.length, h.length).setNumberFormat('@').setValues(rows);
+  props.setProperty('FOUL_SEEDED_V2', '1');
 }
 
 function ensureSchema_(ss) {
@@ -132,7 +170,7 @@ function ensureSchema_(ss) {
     sh.setRightToLeft(true);
     if (name === 'Menu') {
       var rows = SEED_MENU_.map(function (m, i) {
-        return ['m' + (i + 1), m[0], m[1], m[2], m[3], m[4], 1];
+        return ['m' + (i + 1), m[0], m[1], m[2], m[3], m[4], 1, ''];
       });
       sh.getRange(2, 1, rows.length, h.length).setValues(rows);
     }
@@ -239,7 +277,7 @@ function getState(userId) {
   var menu = read_('Menu').filter(function (m) { return str_(m.active) !== '0'; })
     .map(function (m) {
       return { id: m.id, vendor: m.vendor, category: m.category, name: m.name,
-               price: num_(m.price), emoji: m.emoji };
+               price: num_(m.price), emoji: m.emoji, desc: str_(m.desc) };
     });
   var orders = read_('Orders').filter(function (o) { return dateStr_(o.date) === today; });
   var lines = read_('Lines');
@@ -443,7 +481,8 @@ function courierSaveMenuItem(pin, item) {
     if (!name) throw new Error('اكتب اسم الصنف');
     var rec = {
       vendor: item.vendor, category: norm_(item.category) || 'أصناف', name: name,
-      price: Math.max(0, num_(item.price)), emoji: norm_(item.emoji) || '🍽️', active: 1
+      price: Math.max(0, num_(item.price)), emoji: norm_(item.emoji) || '🍽️', active: 1,
+      desc: norm_(item.desc).slice(0, 80)
     };
     var cur = item.id ? read_('Menu').filter(function (m) { return m.id === item.id; })[0] : null;
     if (cur) { for (var k in rec) cur[k] = rec[k]; save_('Menu', cur); }
