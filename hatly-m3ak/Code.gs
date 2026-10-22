@@ -1,8 +1,8 @@
 /**
- * هاتلى معاك — طلبات الفطار والسوبرماركت للموظفين
- * Google Apps Script web app. البيانات بتتخزن في Google Sheet تتعمل أوتوماتيك.
+ * \u0647\u0627\u062A\u0644\u0649 \u0645\u0639\u0627\u0643 \u2014 \u0637\u0644\u0628\u0627\u062A \u0627\u0644\u0641\u0637\u0627\u0631 \u0648\u0627\u0644\u0633\u0648\u0628\u0631\u0645\u0627\u0631\u0643\u062A \u0644\u0644\u0645\u0648\u0638\u0641\u064A\u0646
+ * Google Apps Script web app. \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A \u0628\u062A\u062A\u062E\u0632\u0646 \u0641\u064A Google Sheet \u062A\u062A\u0639\u0645\u0644 \u0623\u0648\u062A\u0648\u0645\u0627\u062A\u064A\u0643.
  *
- * كود مسئول التوصيل: Project Settings > Script properties > COURIER_PIN (الافتراضي 1234)
+ * \u0643\u0648\u062F \u0645\u0633\u0626\u0648\u0644 \u0627\u0644\u062A\u0648\u0635\u064A\u0644: Project Settings > Script properties > COURIER_PIN (\u0627\u0644\u0627\u0641\u062A\u0631\u0627\u0636\u064A 1234)
  */
 
 var TZ_ = 'Africa/Cairo';
@@ -19,89 +19,89 @@ var SCHEMA_ = {
 
 // [vendor, category, name, price, emoji]
 var SEED_MENU_ = [
-  ['foul', 'أطباق', 'طبق فول', 20, '🥣'],
-  ['foul', 'أطباق', 'طبق طعمية (٥ حبات)', 15, '🧆'],
-  ['foul', 'أطباق', 'طبق بيض عيون', 20, '🍳'],
-  ['foul', 'أطباق', 'طبق بابا غنوج', 15, '🍆'],
-  ['foul', 'أطباق', 'طبق سلطة', 8, '🥗'],
-  ['foul', 'إضافات ومشروبات', 'عيش بلدي (٥)', 5, '🍞'],
-  ['foul', 'إضافات ومشروبات', 'عيش فينو', 3, '🥖'],
-  ['foul', 'إضافات ومشروبات', 'مخلل', 5, '🥒'],
-  ['foul', 'إضافات ومشروبات', 'شاي', 10, '🍵'],
-  ['foul', 'إضافات ومشروبات', 'قهوة', 15, '☕'],
-  ['super', 'ألبان وجبن', 'لبن علبة ١ لتر', 40, '🥛'],
-  ['super', 'ألبان وجبن', 'زبادي', 10, '🍦'],
-  ['super', 'ألبان وجبن', 'جبنة مثلثات', 35, '🧀'],
-  ['super', 'مخبوزات وسناكس', 'توست', 35, '🍞'],
-  ['super', 'مخبوزات وسناكس', 'بسكوت', 8, '🍪'],
-  ['super', 'مخبوزات وسناكس', 'كيك', 10, '🍰'],
-  ['super', 'مخبوزات وسناكس', 'شيبسي', 10, '🥔'],
-  ['super', 'مخبوزات وسناكس', 'شوكولاتة', 15, '🍫'],
-  ['super', 'مشروبات', 'مياه', 6, '💧'],
-  ['super', 'مشروبات', 'عصير', 12, '🧃'],
-  ['super', 'مشروبات', 'مشروب غازي', 20, '🥤'],
-  ['super', 'مشروبات', 'نسكافيه ساشيه', 10, '☕'],
-  ['super', 'مشروبات', 'شاي أكياس', 45, '🫖'],
-  ['super', 'حاجات تانية', 'مناديل', 15, '🧻'],
-  ['super', 'حاجات تانية', 'سكر', 30, '🧂']
+  ['foul', '\u0623\u0637\u0628\u0627\u0642', '\u0637\u0628\u0642 \u0641\u0648\u0644', 20, '\uD83E\uDD63'],
+  ['foul', '\u0623\u0637\u0628\u0627\u0642', '\u0637\u0628\u0642 \u0637\u0639\u0645\u064A\u0629 (\u0665 \u062D\u0628\u0627\u062A)', 15, '\uD83E\uDDC6'],
+  ['foul', '\u0623\u0637\u0628\u0627\u0642', '\u0637\u0628\u0642 \u0628\u064A\u0636 \u0639\u064A\u0648\u0646', 20, '\uD83C\uDF73'],
+  ['foul', '\u0623\u0637\u0628\u0627\u0642', '\u0637\u0628\u0642 \u0628\u0627\u0628\u0627 \u063A\u0646\u0648\u062C', 15, '\uD83C\uDF46'],
+  ['foul', '\u0623\u0637\u0628\u0627\u0642', '\u0637\u0628\u0642 \u0633\u0644\u0637\u0629', 8, '\uD83E\uDD57'],
+  ['foul', '\u0625\u0636\u0627\u0641\u0627\u062A \u0648\u0645\u0634\u0631\u0648\u0628\u0627\u062A', '\u0639\u064A\u0634 \u0628\u0644\u062F\u064A (\u0665)', 5, '\uD83C\uDF5E'],
+  ['foul', '\u0625\u0636\u0627\u0641\u0627\u062A \u0648\u0645\u0634\u0631\u0648\u0628\u0627\u062A', '\u0639\u064A\u0634 \u0641\u064A\u0646\u0648', 3, '\uD83E\uDD56'],
+  ['foul', '\u0625\u0636\u0627\u0641\u0627\u062A \u0648\u0645\u0634\u0631\u0648\u0628\u0627\u062A', '\u0645\u062E\u0644\u0644', 5, '\uD83E\uDD52'],
+  ['foul', '\u0625\u0636\u0627\u0641\u0627\u062A \u0648\u0645\u0634\u0631\u0648\u0628\u0627\u062A', '\u0634\u0627\u064A', 10, '\uD83C\uDF75'],
+  ['foul', '\u0625\u0636\u0627\u0641\u0627\u062A \u0648\u0645\u0634\u0631\u0648\u0628\u0627\u062A', '\u0642\u0647\u0648\u0629', 15, '\u2615'],
+  ['super', '\u0623\u0644\u0628\u0627\u0646 \u0648\u062C\u0628\u0646', '\u0644\u0628\u0646 \u0639\u0644\u0628\u0629 \u0661 \u0644\u062A\u0631', 40, '\uD83E\uDD5B'],
+  ['super', '\u0623\u0644\u0628\u0627\u0646 \u0648\u062C\u0628\u0646', '\u0632\u0628\u0627\u062F\u064A', 10, '\uD83C\uDF66'],
+  ['super', '\u0623\u0644\u0628\u0627\u0646 \u0648\u062C\u0628\u0646', '\u062C\u0628\u0646\u0629 \u0645\u062B\u0644\u062B\u0627\u062A', 35, '\uD83E\uDDC0'],
+  ['super', '\u0645\u062E\u0628\u0648\u0632\u0627\u062A \u0648\u0633\u0646\u0627\u0643\u0633', '\u062A\u0648\u0633\u062A', 35, '\uD83C\uDF5E'],
+  ['super', '\u0645\u062E\u0628\u0648\u0632\u0627\u062A \u0648\u0633\u0646\u0627\u0643\u0633', '\u0628\u0633\u0643\u0648\u062A', 8, '\uD83C\uDF6A'],
+  ['super', '\u0645\u062E\u0628\u0648\u0632\u0627\u062A \u0648\u0633\u0646\u0627\u0643\u0633', '\u0643\u064A\u0643', 10, '\uD83C\uDF70'],
+  ['super', '\u0645\u062E\u0628\u0648\u0632\u0627\u062A \u0648\u0633\u0646\u0627\u0643\u0633', '\u0634\u064A\u0628\u0633\u064A', 10, '\uD83E\uDD54'],
+  ['super', '\u0645\u062E\u0628\u0648\u0632\u0627\u062A \u0648\u0633\u0646\u0627\u0643\u0633', '\u0634\u0648\u0643\u0648\u0644\u0627\u062A\u0629', 15, '\uD83C\uDF6B'],
+  ['super', '\u0645\u0634\u0631\u0648\u0628\u0627\u062A', '\u0645\u064A\u0627\u0647', 6, '\uD83D\uDCA7'],
+  ['super', '\u0645\u0634\u0631\u0648\u0628\u0627\u062A', '\u0639\u0635\u064A\u0631', 12, '\uD83E\uDDC3'],
+  ['super', '\u0645\u0634\u0631\u0648\u0628\u0627\u062A', '\u0645\u0634\u0631\u0648\u0628 \u063A\u0627\u0632\u064A', 20, '\uD83E\uDD64'],
+  ['super', '\u0645\u0634\u0631\u0648\u0628\u0627\u062A', '\u0646\u0633\u0643\u0627\u0641\u064A\u0647 \u0633\u0627\u0634\u064A\u0647', 10, '\u2615'],
+  ['super', '\u0645\u0634\u0631\u0648\u0628\u0627\u062A', '\u0634\u0627\u064A \u0623\u0643\u064A\u0627\u0633', 45, '\uD83E\uDED6'],
+  ['super', '\u062D\u0627\u062C\u0627\u062A \u062A\u0627\u0646\u064A\u0629', '\u0645\u0646\u0627\u062F\u064A\u0644', 15, '\uD83E\uDDFB'],
+  ['super', '\u062D\u0627\u062C\u0627\u062A \u062A\u0627\u0646\u064A\u0629', '\u0633\u0643\u0631', 30, '\uD83E\uDDC2']
 ];
 
 
-// سجاير (الأسعار تقريبية وتتعدل من إدارة المنيو)
+// \u0633\u062C\u0627\u064A\u0631 (\u0627\u0644\u0623\u0633\u0639\u0627\u0631 \u062A\u0642\u0631\u064A\u0628\u064A\u0629 \u0648\u062A\u062A\u0639\u062F\u0644 \u0645\u0646 \u0625\u062F\u0627\u0631\u0629 \u0627\u0644\u0645\u0646\u064A\u0648)
 var CIG_SEED_ = [
-  ['كليوباترا', 55], ['كليوباترا كينج', 60], ['كليوباترا ميني', 50],
-  ['ميريت', 75], ['ميريت أزرق', 75],
-  ['مارلبورو أحمر', 105], ['مارلبورو جولد', 105], ['مارلبورو أخضر (مينت)', 105],
-  ['وينستون أحمر', 95], ['وينستون أزرق', 95],
-  ['إل آند إم أحمر', 85], ['إل آند إم أزرق', 85],
-  ['روثمانز أزرق', 95], ['روثمانز أحمر', 95],
-  ['كنت', 105], ['دانهيل', 105], ['بلمونت', 55], ['ديلتا', 50],
-  ['فاين', 45], ['سوبر سنتر', 40]
+  ['\u0643\u0644\u064A\u0648\u0628\u0627\u062A\u0631\u0627', 55], ['\u0643\u0644\u064A\u0648\u0628\u0627\u062A\u0631\u0627 \u0643\u064A\u0646\u062C', 60], ['\u0643\u0644\u064A\u0648\u0628\u0627\u062A\u0631\u0627 \u0645\u064A\u0646\u064A', 50],
+  ['\u0645\u064A\u0631\u064A\u062A', 75], ['\u0645\u064A\u0631\u064A\u062A \u0623\u0632\u0631\u0642', 75],
+  ['\u0645\u0627\u0631\u0644\u0628\u0648\u0631\u0648 \u0623\u062D\u0645\u0631', 105], ['\u0645\u0627\u0631\u0644\u0628\u0648\u0631\u0648 \u062C\u0648\u0644\u062F', 105], ['\u0645\u0627\u0631\u0644\u0628\u0648\u0631\u0648 \u0623\u062E\u0636\u0631 (\u0645\u064A\u0646\u062A)', 105],
+  ['\u0648\u064A\u0646\u0633\u062A\u0648\u0646 \u0623\u062D\u0645\u0631', 95], ['\u0648\u064A\u0646\u0633\u062A\u0648\u0646 \u0623\u0632\u0631\u0642', 95],
+  ['\u0625\u0644 \u0622\u0646\u062F \u0625\u0645 \u0623\u062D\u0645\u0631', 85], ['\u0625\u0644 \u0622\u0646\u062F \u0625\u0645 \u0623\u0632\u0631\u0642', 85],
+  ['\u0631\u0648\u062B\u0645\u0627\u0646\u0632 \u0623\u0632\u0631\u0642', 95], ['\u0631\u0648\u062B\u0645\u0627\u0646\u0632 \u0623\u062D\u0645\u0631', 95],
+  ['\u0643\u0646\u062A', 105], ['\u062F\u0627\u0646\u0647\u064A\u0644', 105], ['\u0628\u0644\u0645\u0648\u0646\u062A', 55], ['\u062F\u064A\u0644\u062A\u0627', 50],
+  ['\u0641\u0627\u064A\u0646', 45], ['\u0633\u0648\u0628\u0631 \u0633\u0646\u062A\u0631', 40]
 ];
 
 
-// سندوتشات مطعم الفول والطعمية — [قسم, اسم, وصف, سعر, إيموجي] (الأسعار تقريبية وتتعدل من إدارة المنيو)
+// \u0633\u0646\u062F\u0648\u062A\u0634\u0627\u062A \u0645\u0637\u0639\u0645 \u0627\u0644\u0641\u0648\u0644 \u0648\u0627\u0644\u0637\u0639\u0645\u064A\u0629 \u2014 [\u0642\u0633\u0645, \u0627\u0633\u0645, \u0648\u0635\u0641, \u0633\u0639\u0631, \u0625\u064A\u0645\u0648\u062C\u064A] (\u0627\u0644\u0623\u0633\u0639\u0627\u0631 \u062A\u0642\u0631\u064A\u0628\u064A\u0629 \u0648\u062A\u062A\u0639\u062F\u0644 \u0645\u0646 \u0625\u062F\u0627\u0631\u0629 \u0627\u0644\u0645\u0646\u064A\u0648)
 var FOUL_SANDWICHES_ = [
-  ['سندوتشات فول', 'فول بالزيت الحار', 'فول مدمس بزيت حار وليمون وكمون', 12, '🫘'],
-  ['سندوتشات فول', 'فول بالسمنة البلدي', 'مدمس بسمنة بلدي وكمون', 14, '🫘'],
-  ['سندوتشات فول', 'فول بالطحينة', 'فول بطحينة وليمون', 14, '🥙'],
-  ['سندوتشات فول', 'فول إسكندراني', 'بالطماطم والفلفل والثوم والكمون', 14, '🌶️'],
-  ['سندوتشات فول', 'فول بالزبدة', 'فول سخن بزبدة', 16, '🧈'],
-  ['سندوتشات فول', 'فول بالبيض المقلي', 'فول مع بيض مقلي', 18, '🍳'],
-  ['سندوتشات فول', 'فول بالسوسيس', 'فول مع سوسيس مقطع', 20, '🌭'],
-  ['سندوتشات فول', 'فول بالسجق', 'فول مع سجق بلدي', 22, '🌭'],
-  ['سندوتشات فول', 'فول بالبسطرمة', 'فول مع بسطرمة', 22, '🥓'],
-  ['سندوتشات طعمية', 'طعمية سادة', 'طعمية خضراء بالكزبرة والشبت', 10, '🧆'],
-  ['سندوتشات طعمية', 'طعمية بالباذنجان', 'طعمية مع باذنجان مقلي', 14, '🍆'],
-  ['سندوتشات طعمية', 'طعمية بالطحينة والسلطة', 'مع طحينة وسلطة وطماطم', 13, '🥗'],
-  ['سندوتشات طعمية', 'طعمية محشية', 'محشية بالدقة والشطة', 14, '🌶️'],
-  ['سندوتشات طعمية', 'طعمية بالبيض', 'طعمية مع بيض مقلي', 17, '🍳'],
-  ['سندوتشات طعمية', 'طعمية بالبسطرمة', 'طعمية مع بسطرمة', 20, '🥓'],
-  ['سندوتشات طعمية', 'طعمية بالجبنة الرومي', 'طعمية مع شرائح رومي', 22, '🧀'],
-  ['سندوتشات ميكس', 'ميكس فول وطعمية', 'نص فول ونص طعمية', 15, '🥙'],
-  ['سندوتشات ميكس', 'ميكس فول وطعمية وبيض', 'فول وطعمية وبيض مقلي', 20, '🍳'],
-  ['سندوتشات ميكس', 'الكبير (فول وطعمية وبيض وبطاطس)', 'السندوتش اللي يشبّعك للعصر', 25, '💪'],
-  ['بيض وجبن ومقليات', 'بيض مسلوق', 'بيضتين مسلوقين بملح وكمون', 12, '🥚'],
-  ['بيض وجبن ومقليات', 'بيض مقلي', 'بيض عيون في سندوتش', 14, '🍳'],
-  ['بيض وجبن ومقليات', 'أومليت بالجبنة', 'أومليت بجبنة رومي', 20, '🧀'],
-  ['بيض وجبن ومقليات', 'بيض بالبسطرمة', 'بيض مقلي مع بسطرمة', 28, '🥓'],
-  ['بيض وجبن ومقليات', 'بطاطس محمرة', 'بطاطس مقلية مقرمشة', 12, '🍟'],
-  ['بيض وجبن ومقليات', 'باذنجان مقلي', 'شرائح باذنجان مقلية بالخل', 14, '🍆'],
-  ['بيض وجبن ومقليات', 'جبنة بيضاء بالطماطم', 'جبنة بيضاء مع طماطم وخيار', 14, '🍅'],
-  ['بيض وجبن ومقليات', 'جبنة رومي', 'شرائح رومي', 22, '🧀'],
-  ['بيض وجبن ومقليات', 'حلاوة طحينية', 'حلاوة بالفستق', 12, '🍯']
+  ['\u0633\u0646\u062F\u0648\u062A\u0634\u0627\u062A \u0641\u0648\u0644', '\u0641\u0648\u0644 \u0628\u0627\u0644\u0632\u064A\u062A \u0627\u0644\u062D\u0627\u0631', '\u0641\u0648\u0644 \u0645\u062F\u0645\u0633 \u0628\u0632\u064A\u062A \u062D\u0627\u0631 \u0648\u0644\u064A\u0645\u0648\u0646 \u0648\u0643\u0645\u0648\u0646', 12, '\uD83E\uDED8'],
+  ['\u0633\u0646\u062F\u0648\u062A\u0634\u0627\u062A \u0641\u0648\u0644', '\u0641\u0648\u0644 \u0628\u0627\u0644\u0633\u0645\u0646\u0629 \u0627\u0644\u0628\u0644\u062F\u064A', '\u0645\u062F\u0645\u0633 \u0628\u0633\u0645\u0646\u0629 \u0628\u0644\u062F\u064A \u0648\u0643\u0645\u0648\u0646', 14, '\uD83E\uDED8'],
+  ['\u0633\u0646\u062F\u0648\u062A\u0634\u0627\u062A \u0641\u0648\u0644', '\u0641\u0648\u0644 \u0628\u0627\u0644\u0637\u062D\u064A\u0646\u0629', '\u0641\u0648\u0644 \u0628\u0637\u062D\u064A\u0646\u0629 \u0648\u0644\u064A\u0645\u0648\u0646', 14, '\uD83E\uDD59'],
+  ['\u0633\u0646\u062F\u0648\u062A\u0634\u0627\u062A \u0641\u0648\u0644', '\u0641\u0648\u0644 \u0625\u0633\u0643\u0646\u062F\u0631\u0627\u0646\u064A', '\u0628\u0627\u0644\u0637\u0645\u0627\u0637\u0645 \u0648\u0627\u0644\u0641\u0644\u0641\u0644 \u0648\u0627\u0644\u062B\u0648\u0645 \u0648\u0627\u0644\u0643\u0645\u0648\u0646', 14, '\uD83C\uDF36\uFE0F'],
+  ['\u0633\u0646\u062F\u0648\u062A\u0634\u0627\u062A \u0641\u0648\u0644', '\u0641\u0648\u0644 \u0628\u0627\u0644\u0632\u0628\u062F\u0629', '\u0641\u0648\u0644 \u0633\u062E\u0646 \u0628\u0632\u0628\u062F\u0629', 16, '\uD83E\uDDC8'],
+  ['\u0633\u0646\u062F\u0648\u062A\u0634\u0627\u062A \u0641\u0648\u0644', '\u0641\u0648\u0644 \u0628\u0627\u0644\u0628\u064A\u0636 \u0627\u0644\u0645\u0642\u0644\u064A', '\u0641\u0648\u0644 \u0645\u0639 \u0628\u064A\u0636 \u0645\u0642\u0644\u064A', 18, '\uD83C\uDF73'],
+  ['\u0633\u0646\u062F\u0648\u062A\u0634\u0627\u062A \u0641\u0648\u0644', '\u0641\u0648\u0644 \u0628\u0627\u0644\u0633\u0648\u0633\u064A\u0633', '\u0641\u0648\u0644 \u0645\u0639 \u0633\u0648\u0633\u064A\u0633 \u0645\u0642\u0637\u0639', 20, '\uD83C\uDF2D'],
+  ['\u0633\u0646\u062F\u0648\u062A\u0634\u0627\u062A \u0641\u0648\u0644', '\u0641\u0648\u0644 \u0628\u0627\u0644\u0633\u062C\u0642', '\u0641\u0648\u0644 \u0645\u0639 \u0633\u062C\u0642 \u0628\u0644\u062F\u064A', 22, '\uD83C\uDF2D'],
+  ['\u0633\u0646\u062F\u0648\u062A\u0634\u0627\u062A \u0641\u0648\u0644', '\u0641\u0648\u0644 \u0628\u0627\u0644\u0628\u0633\u0637\u0631\u0645\u0629', '\u0641\u0648\u0644 \u0645\u0639 \u0628\u0633\u0637\u0631\u0645\u0629', 22, '\uD83E\uDD53'],
+  ['\u0633\u0646\u062F\u0648\u062A\u0634\u0627\u062A \u0637\u0639\u0645\u064A\u0629', '\u0637\u0639\u0645\u064A\u0629 \u0633\u0627\u062F\u0629', '\u0637\u0639\u0645\u064A\u0629 \u062E\u0636\u0631\u0627\u0621 \u0628\u0627\u0644\u0643\u0632\u0628\u0631\u0629 \u0648\u0627\u0644\u0634\u0628\u062A', 10, '\uD83E\uDDC6'],
+  ['\u0633\u0646\u062F\u0648\u062A\u0634\u0627\u062A \u0637\u0639\u0645\u064A\u0629', '\u0637\u0639\u0645\u064A\u0629 \u0628\u0627\u0644\u0628\u0627\u0630\u0646\u062C\u0627\u0646', '\u0637\u0639\u0645\u064A\u0629 \u0645\u0639 \u0628\u0627\u0630\u0646\u062C\u0627\u0646 \u0645\u0642\u0644\u064A', 14, '\uD83C\uDF46'],
+  ['\u0633\u0646\u062F\u0648\u062A\u0634\u0627\u062A \u0637\u0639\u0645\u064A\u0629', '\u0637\u0639\u0645\u064A\u0629 \u0628\u0627\u0644\u0637\u062D\u064A\u0646\u0629 \u0648\u0627\u0644\u0633\u0644\u0637\u0629', '\u0645\u0639 \u0637\u062D\u064A\u0646\u0629 \u0648\u0633\u0644\u0637\u0629 \u0648\u0637\u0645\u0627\u0637\u0645', 13, '\uD83E\uDD57'],
+  ['\u0633\u0646\u062F\u0648\u062A\u0634\u0627\u062A \u0637\u0639\u0645\u064A\u0629', '\u0637\u0639\u0645\u064A\u0629 \u0645\u062D\u0634\u064A\u0629', '\u0645\u062D\u0634\u064A\u0629 \u0628\u0627\u0644\u062F\u0642\u0629 \u0648\u0627\u0644\u0634\u0637\u0629', 14, '\uD83C\uDF36\uFE0F'],
+  ['\u0633\u0646\u062F\u0648\u062A\u0634\u0627\u062A \u0637\u0639\u0645\u064A\u0629', '\u0637\u0639\u0645\u064A\u0629 \u0628\u0627\u0644\u0628\u064A\u0636', '\u0637\u0639\u0645\u064A\u0629 \u0645\u0639 \u0628\u064A\u0636 \u0645\u0642\u0644\u064A', 17, '\uD83C\uDF73'],
+  ['\u0633\u0646\u062F\u0648\u062A\u0634\u0627\u062A \u0637\u0639\u0645\u064A\u0629', '\u0637\u0639\u0645\u064A\u0629 \u0628\u0627\u0644\u0628\u0633\u0637\u0631\u0645\u0629', '\u0637\u0639\u0645\u064A\u0629 \u0645\u0639 \u0628\u0633\u0637\u0631\u0645\u0629', 20, '\uD83E\uDD53'],
+  ['\u0633\u0646\u062F\u0648\u062A\u0634\u0627\u062A \u0637\u0639\u0645\u064A\u0629', '\u0637\u0639\u0645\u064A\u0629 \u0628\u0627\u0644\u062C\u0628\u0646\u0629 \u0627\u0644\u0631\u0648\u0645\u064A', '\u0637\u0639\u0645\u064A\u0629 \u0645\u0639 \u0634\u0631\u0627\u0626\u062D \u0631\u0648\u0645\u064A', 22, '\uD83E\uDDC0'],
+  ['\u0633\u0646\u062F\u0648\u062A\u0634\u0627\u062A \u0645\u064A\u0643\u0633', '\u0645\u064A\u0643\u0633 \u0641\u0648\u0644 \u0648\u0637\u0639\u0645\u064A\u0629', '\u0646\u0635 \u0641\u0648\u0644 \u0648\u0646\u0635 \u0637\u0639\u0645\u064A\u0629', 15, '\uD83E\uDD59'],
+  ['\u0633\u0646\u062F\u0648\u062A\u0634\u0627\u062A \u0645\u064A\u0643\u0633', '\u0645\u064A\u0643\u0633 \u0641\u0648\u0644 \u0648\u0637\u0639\u0645\u064A\u0629 \u0648\u0628\u064A\u0636', '\u0641\u0648\u0644 \u0648\u0637\u0639\u0645\u064A\u0629 \u0648\u0628\u064A\u0636 \u0645\u0642\u0644\u064A', 20, '\uD83C\uDF73'],
+  ['\u0633\u0646\u062F\u0648\u062A\u0634\u0627\u062A \u0645\u064A\u0643\u0633', '\u0627\u0644\u0643\u0628\u064A\u0631 (\u0641\u0648\u0644 \u0648\u0637\u0639\u0645\u064A\u0629 \u0648\u0628\u064A\u0636 \u0648\u0628\u0637\u0627\u0637\u0633)', '\u0627\u0644\u0633\u0646\u062F\u0648\u062A\u0634 \u0627\u0644\u0644\u064A \u064A\u0634\u0628\u0651\u0639\u0643 \u0644\u0644\u0639\u0635\u0631', 25, '\uD83D\uDCAA'],
+  ['\u0628\u064A\u0636 \u0648\u062C\u0628\u0646 \u0648\u0645\u0642\u0644\u064A\u0627\u062A', '\u0628\u064A\u0636 \u0645\u0633\u0644\u0648\u0642', '\u0628\u064A\u0636\u062A\u064A\u0646 \u0645\u0633\u0644\u0648\u0642\u064A\u0646 \u0628\u0645\u0644\u062D \u0648\u0643\u0645\u0648\u0646', 12, '\uD83E\uDD5A'],
+  ['\u0628\u064A\u0636 \u0648\u062C\u0628\u0646 \u0648\u0645\u0642\u0644\u064A\u0627\u062A', '\u0628\u064A\u0636 \u0645\u0642\u0644\u064A', '\u0628\u064A\u0636 \u0639\u064A\u0648\u0646 \u0641\u064A \u0633\u0646\u062F\u0648\u062A\u0634', 14, '\uD83C\uDF73'],
+  ['\u0628\u064A\u0636 \u0648\u062C\u0628\u0646 \u0648\u0645\u0642\u0644\u064A\u0627\u062A', '\u0623\u0648\u0645\u0644\u064A\u062A \u0628\u0627\u0644\u062C\u0628\u0646\u0629', '\u0623\u0648\u0645\u0644\u064A\u062A \u0628\u062C\u0628\u0646\u0629 \u0631\u0648\u0645\u064A', 20, '\uD83E\uDDC0'],
+  ['\u0628\u064A\u0636 \u0648\u062C\u0628\u0646 \u0648\u0645\u0642\u0644\u064A\u0627\u062A', '\u0628\u064A\u0636 \u0628\u0627\u0644\u0628\u0633\u0637\u0631\u0645\u0629', '\u0628\u064A\u0636 \u0645\u0642\u0644\u064A \u0645\u0639 \u0628\u0633\u0637\u0631\u0645\u0629', 28, '\uD83E\uDD53'],
+  ['\u0628\u064A\u0636 \u0648\u062C\u0628\u0646 \u0648\u0645\u0642\u0644\u064A\u0627\u062A', '\u0628\u0637\u0627\u0637\u0633 \u0645\u062D\u0645\u0631\u0629', '\u0628\u0637\u0627\u0637\u0633 \u0645\u0642\u0644\u064A\u0629 \u0645\u0642\u0631\u0645\u0634\u0629', 12, '\uD83C\uDF5F'],
+  ['\u0628\u064A\u0636 \u0648\u062C\u0628\u0646 \u0648\u0645\u0642\u0644\u064A\u0627\u062A', '\u0628\u0627\u0630\u0646\u062C\u0627\u0646 \u0645\u0642\u0644\u064A', '\u0634\u0631\u0627\u0626\u062D \u0628\u0627\u0630\u0646\u062C\u0627\u0646 \u0645\u0642\u0644\u064A\u0629 \u0628\u0627\u0644\u062E\u0644', 14, '\uD83C\uDF46'],
+  ['\u0628\u064A\u0636 \u0648\u062C\u0628\u0646 \u0648\u0645\u0642\u0644\u064A\u0627\u062A', '\u062C\u0628\u0646\u0629 \u0628\u064A\u0636\u0627\u0621 \u0628\u0627\u0644\u0637\u0645\u0627\u0637\u0645', '\u062C\u0628\u0646\u0629 \u0628\u064A\u0636\u0627\u0621 \u0645\u0639 \u0637\u0645\u0627\u0637\u0645 \u0648\u062E\u064A\u0627\u0631', 14, '\uD83C\uDF45'],
+  ['\u0628\u064A\u0636 \u0648\u062C\u0628\u0646 \u0648\u0645\u0642\u0644\u064A\u0627\u062A', '\u062C\u0628\u0646\u0629 \u0631\u0648\u0645\u064A', '\u0634\u0631\u0627\u0626\u062D \u0631\u0648\u0645\u064A', 22, '\uD83E\uDDC0'],
+  ['\u0628\u064A\u0636 \u0648\u062C\u0628\u0646 \u0648\u0645\u0642\u0644\u064A\u0627\u062A', '\u062D\u0644\u0627\u0648\u0629 \u0637\u062D\u064A\u0646\u064A\u0629', '\u062D\u0644\u0627\u0648\u0629 \u0628\u0627\u0644\u0641\u0633\u062A\u0642', 12, '\uD83C\uDF6F']
 ];
 
 var db_ = null;
 
 function doGet() {
   return HtmlService.createHtmlOutputFromFile('index')
-    .setTitle('هاتلى معاك')
+    .setTitle('\u0647\u0627\u062A\u0644\u0649 \u0645\u0639\u0627\u0643')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1, viewport-fit=cover')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
-/* ---------------------------- قاعدة البيانات ---------------------------- */
+/* ---------------------------- \u0642\u0627\u0639\u062F\u0629 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A ---------------------------- */
 
 function getDb_() {
   if (db_) return db_;
@@ -112,7 +112,7 @@ function getDb_() {
     var id = props.getProperty('DB_ID');
     if (id) { try { ss = SpreadsheetApp.openById(id); } catch (e) {} }
     if (!ss) {
-      ss = SpreadsheetApp.create('هاتلى معاك - البيانات');
+      ss = SpreadsheetApp.create('\u0647\u0627\u062A\u0644\u0649 \u0645\u0639\u0627\u0643 - \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A');
       props.setProperty('DB_ID', ss.getId());
     }
   }
@@ -127,10 +127,10 @@ function migrateCigs_() {
   var props = PropertiesService.getScriptProperties();
   if (props.getProperty('CIGS_SEEDED')) return;
   var sh = db_.getSheetByName('Menu'), h = SCHEMA_.Menu;
-  var has = read_('Menu').some(function (m) { return m.category === 'سجاير'; });
+  var has = read_('Menu').some(function (m) { return m.category === '\u0633\u062C\u0627\u064A\u0631'; });
   if (!has) {
     var rows = CIG_SEED_.map(function (c) {
-      return [newId_('m_'), 'super', 'سجاير', c[0], c[1], '🚬', 1, ''];
+      return [newId_('m_'), 'super', '\u0633\u062C\u0627\u064A\u0631', c[0], c[1], '\uD83D\uDEAC', 1, ''];
     });
     sh.getRange(sh.getLastRow() + 1, 1, rows.length, h.length).setNumberFormat('@').setValues(rows);
   }
@@ -141,8 +141,8 @@ function migrateFoul_() {
   var props = PropertiesService.getScriptProperties();
   if (props.getProperty('FOUL_SEEDED_V2')) return;
   var sh = db_.getSheetByName('Menu'), h = SCHEMA_.Menu;
-  read_('Menu').forEach(function (m) { // شيل السندوتشات القديمة (القسم القديم)
-    if (m.vendor === 'foul' && m.category === 'ساندوتشات' && str_(m.active) !== '0') { m.active = 0; save_('Menu', m); }
+  read_('Menu').forEach(function (m) { // \u0634\u064A\u0644 \u0627\u0644\u0633\u0646\u062F\u0648\u062A\u0634\u0627\u062A \u0627\u0644\u0642\u062F\u064A\u0645\u0629 (\u0627\u0644\u0642\u0633\u0645 \u0627\u0644\u0642\u062F\u064A\u0645)
+    if (m.vendor === 'foul' && m.category === '\u0633\u0627\u0646\u062F\u0648\u062A\u0634\u0627\u062A' && str_(m.active) !== '0') { m.active = 0; save_('Menu', m); }
   });
   var rows = FOUL_SANDWICHES_.map(function (c) {
     return [newId_('m_'), 'foul', c[0], c[1], c[3], c[4], 1, c[2]];
@@ -157,7 +157,7 @@ function ensureSchema_(ss) {
     var sh = ss.getSheetByName(name);
     if (sh) {
       var hh = SCHEMA_[name], cur = sh.getRange(1, 1, 1, hh.length).getValues()[0];
-      if (cur.some(function (c) { return c === ''; })) { // عمود جديد اتضاف في تحديث
+      if (cur.some(function (c) { return c === ''; })) { // \u0639\u0645\u0648\u062F \u062C\u062F\u064A\u062F \u0627\u062A\u0636\u0627\u0641 \u0641\u064A \u062A\u062D\u062F\u064A\u062B
         sh.getRange(1, 1, sh.getMaxRows(), hh.length).setNumberFormat('@');
         sh.getRange(1, 1, 1, hh.length).setValues([hh]).setFontWeight('bold').setBackground('#FFE08A');
       }
@@ -178,7 +178,7 @@ function ensureSchema_(ss) {
     created = true;
   });
   if (created) {
-    ['Sheet1', 'Sheet 1', 'ورقة1'].forEach(function (n) {
+    ['Sheet1', 'Sheet 1', '\u0648\u0631\u0642\u06291'].forEach(function (n) {
       var d = ss.getSheetByName(n);
       if (d && ss.getSheets().length > 1) ss.deleteSheet(d);
     });
@@ -214,7 +214,7 @@ function withLock_(fn) {
   try { return fn(); } finally { lock.releaseLock(); }
 }
 
-/* ------------------------------- أدوات ------------------------------- */
+/* ------------------------------- \u0623\u062F\u0648\u0627\u062A ------------------------------- */
 
 function num_(v) { var n = Number(v); return isNaN(n) ? 0 : n; }
 function str_(v) { return v == null ? '' : String(v); }
@@ -226,14 +226,14 @@ function dateStr_(v) {
   return v instanceof Date ? Utilities.formatDate(v, TZ_, 'yyyy-MM-dd') : str_(v);
 }
 
-// مفتاح عام للموظف (مايكشفش الـ id السري بتاعه)
+// \u0645\u0641\u062A\u0627\u062D \u0639\u0627\u0645 \u0644\u0644\u0645\u0648\u0638\u0641 (\u0645\u0627\u064A\u0643\u0634\u0641\u0634 \u0627\u0644\u0640 id \u0627\u0644\u0633\u0631\u064A \u0628\u062A\u0627\u0639\u0647)
 function ukey_(userId) {
   var d = Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, 'hm:' + userId);
   return Utilities.base64EncodeWebSafe(d).slice(0, 10);
 }
 
 function checkVendor_(v) {
-  if (VENDORS_.indexOf(v) < 0) throw new Error('المحل مش معروف');
+  if (VENDORS_.indexOf(v) < 0) throw new Error('\u0627\u0644\u0645\u062D\u0644 \u0645\u0634 \u0645\u0639\u0631\u0648\u0641');
 }
 
 function isNa_(l) { return num_(l.na) > 0; }
@@ -254,12 +254,12 @@ function createOrder_(vendor, round) {
   return read_('Orders').filter(function (x) { return x.id === o.id; })[0];
 }
 
-// آخر جولة النهاردة (أو بتتعمل الأولى). لو round اتحدد بترجع الجولة دي.
+// \u0622\u062E\u0631 \u062C\u0648\u0644\u0629 \u0627\u0644\u0646\u0647\u0627\u0631\u062F\u0629 (\u0623\u0648 \u0628\u062A\u062A\u0639\u0645\u0644 \u0627\u0644\u0623\u0648\u0644\u0649). \u0644\u0648 round \u0627\u062A\u062D\u062F\u062F \u0628\u062A\u0631\u062C\u0639 \u0627\u0644\u062C\u0648\u0644\u0629 \u062F\u064A.
 function getOrCreateOrder_(vendor, round) {
   var list = todayOrders_(vendor);
   if (round) {
     var r = list.filter(function (o) { return roundOf_(o) === Number(round); })[0];
-    if (!r) throw new Error('الجولة مش موجودة');
+    if (!r) throw new Error('\u0627\u0644\u062C\u0648\u0644\u0629 \u0645\u0634 \u0645\u0648\u062C\u0648\u062F\u0629');
     return r;
   }
   return list.length ? list[list.length - 1] : createOrder_(vendor, 1);
@@ -274,11 +274,11 @@ function checkPin_(pin) {
   var real = PropertiesService.getScriptProperties().getProperty('COURIER_PIN') || '1234';
   if (str_(pin) !== real) {
     Utilities.sleep(600);
-    throw new Error('الكود غلط');
+    throw new Error('\u0627\u0644\u0643\u0648\u062F \u063A\u0644\u0637');
   }
 }
 
-/* ------------------------------ للموظفين ------------------------------ */
+/* ------------------------------ \u0644\u0644\u0645\u0648\u0638\u0641\u064A\u0646 ------------------------------ */
 
 function getState(userId, pin) {
   var isC = isPin_(pin);
@@ -330,10 +330,10 @@ function receiptOut_(r) {
 function cleanProfile_(p) {
   p = p || {};
   var name = norm_(p.name), office = norm_(p.office), floor = parseInt(p.floor, 10);
-  if (!p.id || str_(p.id).length < 8) throw new Error('بيانات الموظف ناقصة');
-  if (!name || name.length > 40) throw new Error('اكتب اسمك');
-  if (!office || office.length > 20) throw new Error('اكتب رقم المكتب');
-  if (isNaN(floor) || floor < -3 || floor > 60) throw new Error('اختار الدور');
+  if (!p.id || str_(p.id).length < 8) throw new Error('\u0628\u064A\u0627\u0646\u0627\u062A \u0627\u0644\u0645\u0648\u0638\u0641 \u0646\u0627\u0642\u0635\u0629');
+  if (!name || name.length > 40) throw new Error('\u0627\u0643\u062A\u0628 \u0627\u0633\u0645\u0643');
+  if (!office || office.length > 20) throw new Error('\u0627\u0643\u062A\u0628 \u0631\u0642\u0645 \u0627\u0644\u0645\u0643\u062A\u0628');
+  if (isNaN(floor) || floor < -3 || floor > 60) throw new Error('\u0627\u062E\u062A\u0627\u0631 \u0627\u0644\u062F\u0648\u0631');
   return { id: str_(p.id), name: name, floor: floor, office: office, phone: norm_(p.phone).slice(0, 20) };
 }
 
@@ -360,18 +360,18 @@ function addLines(profile, vendor, items) {
   return withLock_(function () {
     checkVendor_(vendor);
     var p = cleanProfile_(profile);
-    if (!items || !items.length || items.length > 30) throw new Error('مفيش أصناف تتضاف');
+    if (!items || !items.length || items.length > 30) throw new Error('\u0645\u0641\u064A\u0634 \u0623\u0635\u0646\u0627\u0641 \u062A\u062A\u0636\u0627\u0641');
     upsertUser_(p);
     var order = getOrCreateOrder_(vendor);
-    if (order.status !== 'open') throw new Error('الأوردر اتقفل، مسئول التوصيل نازل يطلب 🛵');
+    if (order.status !== 'open') throw new Error('\u0627\u0644\u0623\u0648\u0631\u062F\u0631 \u0627\u062A\u0642\u0641\u0644\u060C \u0645\u0633\u0626\u0648\u0644 \u0627\u0644\u062A\u0648\u0635\u064A\u0644 \u0646\u0627\u0632\u0644 \u064A\u0637\u0644\u0628 \uD83D\uDEF5');
     var menuNow = read_('Menu');
     items.forEach(function (it) {
       var item = norm_(it.item).slice(0, 60), qty = parseInt(it.qty, 10);
-      if (!item || isNaN(qty) || qty < 1 || qty > 50) throw new Error('صنف أو كمية غلط');
+      if (!item || isNaN(qty) || qty < 1 || qty > 50) throw new Error('\u0635\u0646\u0641 \u0623\u0648 \u0643\u0645\u064A\u0629 \u063A\u0644\u0637');
       var hit = menuNow.filter(function (m) { return m.vendor === vendor && norm_(m.name) === item; })[0];
       append_('Lines', {
-        cat: hit ? str_(hit.category) : 'إضافات الزملاء',
-        bread: ['بلدي', 'شامي'].indexOf(norm_(it.bread)) >= 0 ? norm_(it.bread) : '',
+        cat: hit ? str_(hit.category) : '\u0625\u0636\u0627\u0641\u0627\u062A \u0627\u0644\u0632\u0645\u0644\u0627\u0621',
+        bread: ['\u0628\u0644\u062F\u064A', '\u0634\u0627\u0645\u064A'].indexOf(norm_(it.bread)) >= 0 ? norm_(it.bread) : '',
         id: newId_('l_'), orderId: order.id, userId: p.id, userName: p.name,
         floor: p.floor, office: p.office, item: item, qty: qty,
         estPrice: Math.max(0, num_(it.estPrice)), actualPrice: '',
@@ -383,17 +383,17 @@ function addLines(profile, vendor, items) {
   });
 }
 
-// أي صنف جديد يكتبه موظف يتضاف للمنيو أوتوماتيك عشان يتطلب تاني بضغطة
+// \u0623\u064A \u0635\u0646\u0641 \u062C\u062F\u064A\u062F \u064A\u0643\u062A\u0628\u0647 \u0645\u0648\u0638\u0641 \u064A\u062A\u0636\u0627\u0641 \u0644\u0644\u0645\u0646\u064A\u0648 \u0623\u0648\u062A\u0648\u0645\u0627\u062A\u064A\u0643 \u0639\u0634\u0627\u0646 \u064A\u062A\u0637\u0644\u0628 \u062A\u0627\u0646\u064A \u0628\u0636\u063A\u0637\u0629
 function addToMenuIfNew_(menu, vendor, name, price) {
   var found = menu.filter(function (m) { return m.vendor === vendor && norm_(m.name) === name; })[0];
-  if (found) return; // موجود (أو مسئول التوصيل مسحه قبل كده فمنرجعوش)
-  var rec = { id: newId_('m_'), vendor: vendor, category: 'إضافات الزملاء', name: name,
-              price: price, emoji: '✨', active: 1 };
+  if (found) return; // \u0645\u0648\u062C\u0648\u062F (\u0623\u0648 \u0645\u0633\u0626\u0648\u0644 \u0627\u0644\u062A\u0648\u0635\u064A\u0644 \u0645\u0633\u062D\u0647 \u0642\u0628\u0644 \u0643\u062F\u0647 \u0641\u0645\u0646\u0631\u062C\u0639\u0648\u0634)
+  var rec = { id: newId_('m_'), vendor: vendor, category: '\u0625\u0636\u0627\u0641\u0627\u062A \u0627\u0644\u0632\u0645\u0644\u0627\u0621', name: name,
+              price: price, emoji: '\u2728', active: 1 };
   append_('Menu', rec);
   menu.push(rec);
 }
 
-// تاريخ مشتريات الموظف (آخر ٩٠ يوم)
+// \u062A\u0627\u0631\u064A\u062E \u0645\u0634\u062A\u0631\u064A\u0627\u062A \u0627\u0644\u0645\u0648\u0638\u0641 (\u0622\u062E\u0631 \u0669\u0660 \u064A\u0648\u0645)
 function getHistory(userId) {
   if (!userId) return [];
   var orders = {};
@@ -417,19 +417,19 @@ function getHistory(userId) {
 function deleteLine(userId, lineId) {
   return withLock_(function () {
     var l = read_('Lines').filter(function (x) { return x.id === lineId; })[0];
-    if (!l || l.userId !== userId) throw new Error('الصنف مش موجود');
+    if (!l || l.userId !== userId) throw new Error('\u0627\u0644\u0635\u0646\u0641 \u0645\u0634 \u0645\u0648\u062C\u0648\u062F');
     var o = read_('Orders').filter(function (x) { return x.id === l.orderId; })[0];
-    if (o && o.status !== 'open' && !isNa_(l)) throw new Error('الأوردر اتقفل');
+    if (o && o.status !== 'open' && !isNa_(l)) throw new Error('\u0627\u0644\u0623\u0648\u0631\u062F\u0631 \u0627\u062A\u0642\u0641\u0644');
     getDb_().getSheetByName('Lines').deleteRow(l._r);
     return true;
   });
 }
 
-/* -------------------------------- لمسئول التوصيل -------------------------------- */
+/* -------------------------------- \u0644\u0645\u0633\u0626\u0648\u0644 \u0627\u0644\u062A\u0648\u0635\u064A\u0644 -------------------------------- */
 
 function courierLogin(pin) { checkPin_(pin); return true; }
 
-// سعر مسئول التوصيل الفعلي هو المرجع: بيتحدّث بيه سعر الصنف في المنيو
+// \u0633\u0639\u0631 \u0645\u0633\u0626\u0648\u0644 \u0627\u0644\u062A\u0648\u0635\u064A\u0644 \u0627\u0644\u0641\u0639\u0644\u064A \u0647\u0648 \u0627\u0644\u0645\u0631\u062C\u0639: \u0628\u064A\u062A\u062D\u062F\u0651\u062B \u0628\u064A\u0647 \u0633\u0639\u0631 \u0627\u0644\u0635\u0646\u0641 \u0641\u064A \u0627\u0644\u0645\u0646\u064A\u0648
 function updateMenuPrices_(vendor, prices) {
   read_('Menu').forEach(function (m) {
     if (m.vendor !== vendor || str_(m.active) === '0') return;
@@ -440,7 +440,7 @@ function updateMenuPrices_(vendor, prices) {
   });
 }
 
-/* ------------------------------- الإحصائيات ------------------------------- */
+/* ------------------------------- \u0627\u0644\u0625\u062D\u0635\u0627\u0626\u064A\u0627\u062A ------------------------------- */
 
 function courierStats(pin, days) {
   checkPin_(pin);
@@ -464,7 +464,7 @@ function courierStats(pin, days) {
       if (str_(l.paid) !== '1') u.paid = false;
     });
     var uids = Object.keys(users), share = uids.length ? fee / uids.length : 0;
-    if (o.status === 'done') uids.forEach(function (id) { // اللي لسه مادفعش (كل الأيام)
+    if (o.status === 'done') uids.forEach(function (id) { // \u0627\u0644\u0644\u064A \u0644\u0633\u0647 \u0645\u0627\u062F\u0641\u0639\u0634 (\u0643\u0644 \u0627\u0644\u0623\u064A\u0627\u0645)
       var u = users[id]; if (u.paid) return;
       var a = unpaid[id] || (unpaid[id] = { name: u.l.userName, floor: num_(u.l.floor), office: str_(u.l.office), amount: 0, orders: 0 });
       a.amount += u.sub + share; a.orders++;
@@ -512,7 +512,7 @@ function courierStats(pin, days) {
   };
 }
 
-/* ------------------------- صنف مش موجود + تبليغ الموظف ------------------------- */
+/* ------------------------- \u0635\u0646\u0641 \u0645\u0634 \u0645\u0648\u062C\u0648\u062F + \u062A\u0628\u0644\u064A\u063A \u0627\u0644\u0645\u0648\u0638\u0641 ------------------------- */
 
 function courierSetUnavailable(pin, vendor, round, item, flag) {
   checkPin_(pin);
@@ -552,14 +552,14 @@ function courierRemoveLines(pin, ids) {
   });
 }
 
-// تبديل صنف مش موجود بصنف تاني لنفس الموظف
+// \u062A\u0628\u062F\u064A\u0644 \u0635\u0646\u0641 \u0645\u0634 \u0645\u0648\u062C\u0648\u062F \u0628\u0635\u0646\u0641 \u062A\u0627\u0646\u064A \u0644\u0646\u0641\u0633 \u0627\u0644\u0645\u0648\u0638\u0641
 function courierReplaceLines(pin, ids, newItem, price) {
   checkPin_(pin);
   return withLock_(function () {
     var name = norm_(newItem).slice(0, 60);
-    if (!name) throw new Error('اكتب اسم الصنف البديل');
+    if (!name) throw new Error('\u0627\u0643\u062A\u0628 \u0627\u0633\u0645 \u0627\u0644\u0635\u0646\u0641 \u0627\u0644\u0628\u062F\u064A\u0644');
     var ls = linesByIds_(ids);
-    if (!ls.length) throw new Error('الطلب مش موجود');
+    if (!ls.length) throw new Error('\u0627\u0644\u0637\u0644\u0628 \u0645\u0634 \u0645\u0648\u062C\u0648\u062F');
     var orders = {};
     read_('Orders').forEach(function (o) { orders[o.id] = o; });
     var menu = read_('Menu');
@@ -568,7 +568,7 @@ function courierReplaceLines(pin, ids, newItem, price) {
       var hit = menu.filter(function (m) { return m.vendor === vendor && norm_(m.name) === name && str_(m.active) !== '0'; })[0];
       var p = hit ? num_(hit.price) : Math.max(0, num_(price));
       l.item = name; l.estPrice = p; l.actualPrice = ''; l.na = '';
-      l.cat = hit ? str_(hit.category) : 'إضافات الزملاء';
+      l.cat = hit ? str_(hit.category) : '\u0625\u0636\u0627\u0641\u0627\u062A \u0627\u0644\u0632\u0645\u0644\u0627\u0621';
       save_('Lines', l);
       addToMenuIfNew_(menu, vendor, name, p);
     });
@@ -580,11 +580,11 @@ function courierSetStatus(pin, vendor, status, round) {
   checkPin_(pin);
   return withLock_(function () {
     checkVendor_(vendor);
-    if (['open', 'closed', 'done'].indexOf(status) < 0) throw new Error('حالة غلط');
+    if (['open', 'closed', 'done'].indexOf(status) < 0) throw new Error('\u062D\u0627\u0644\u0629 \u063A\u0644\u0637');
     var o = getOrCreateOrder_(vendor, round);
     if (status === 'open') {
       var list = todayOrders_(vendor);
-      if (list[list.length - 1].id !== o.id) throw new Error('تقدر تفتح آخر جولة بس');
+      if (list[list.length - 1].id !== o.id) throw new Error('\u062A\u0642\u062F\u0631 \u062A\u0641\u062A\u062D \u0622\u062E\u0631 \u062C\u0648\u0644\u0629 \u0628\u0633');
     }
     o.status = status;
     save_('Orders', o);
@@ -592,7 +592,7 @@ function courierSetStatus(pin, vendor, status, round) {
   });
 }
 
-// prices: { "اسم الصنف": سعر الوحدة الفعلي }
+// prices: { "\u0627\u0633\u0645 \u0627\u0644\u0635\u0646\u0641": \u0633\u0639\u0631 \u0627\u0644\u0648\u062D\u062F\u0629 \u0627\u0644\u0641\u0639\u0644\u064A }
 function courierSave(pin, vendor, prices, fee, round) {
   checkPin_(pin);
   return withLock_(function () {
@@ -639,25 +639,25 @@ function courierNewRound(pin, vendor) {
   return withLock_(function () {
     checkVendor_(vendor);
     var list = todayOrders_(vendor);
-    if (list.length && list[list.length - 1].status === 'open') throw new Error('الجولة الحالية لسه مفتوحة');
+    if (list.length && list[list.length - 1].status === 'open') throw new Error('\u0627\u0644\u062C\u0648\u0644\u0629 \u0627\u0644\u062D\u0627\u0644\u064A\u0629 \u0644\u0633\u0647 \u0645\u0641\u062A\u0648\u062D\u0629');
     createOrder_(vendor, list.length ? roundOf_(list[list.length - 1]) + 1 : 1);
     return true;
   });
 }
 
-/* ----------------------- قراءة الريسيت بالذكاء الاصطناعي ----------------------- */
+/* ----------------------- \u0642\u0631\u0627\u0621\u0629 \u0627\u0644\u0631\u064A\u0633\u064A\u062A \u0628\u0627\u0644\u0630\u0643\u0627\u0621 \u0627\u0644\u0627\u0635\u0637\u0646\u0627\u0639\u064A ----------------------- */
 
 function numAr_(v) {
-  return num_(str_(v).replace(/[٠-٩]/g, function (d) { return '٠١٢٣٤٥٦٧٨٩'.indexOf(d); }).replace(/٫/g, '.').replace(/[^\d.\-]/g, ''));
+  return num_(str_(v).replace(/[\u0660-\u0669]/g, function (d) { return '\u0660\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668\u0669'.indexOf(d); }).replace(/\u066B/g, '.').replace(/[^\d.\-]/g, ''));
 }
 
-// بيحوّل رد الموديل لبيانات نضيفة، وبيتأكد إن كل "match" هو صنف فعلاً في الأوردر
+// \u0628\u064A\u062D\u0648\u0651\u0644 \u0631\u062F \u0627\u0644\u0645\u0648\u062F\u064A\u0644 \u0644\u0628\u064A\u0627\u0646\u0627\u062A \u0646\u0636\u064A\u0641\u0629\u060C \u0648\u0628\u064A\u062A\u0623\u0643\u062F \u0625\u0646 \u0643\u0644 "match" \u0647\u0648 \u0635\u0646\u0641 \u0641\u0639\u0644\u0627\u064B \u0641\u064A \u0627\u0644\u0623\u0648\u0631\u062F\u0631
 function normalizeReceipt_(text, itemNames) {
   var a = text.indexOf('{'), b = text.lastIndexOf('}');
-  if (a < 0 || b < a) throw new Error('مقدرتش أقرا الريسيت، جرب صورة أوضح');
+  if (a < 0 || b < a) throw new Error('\u0645\u0642\u062F\u0631\u062A\u0634 \u0623\u0642\u0631\u0627 \u0627\u0644\u0631\u064A\u0633\u064A\u062A\u060C \u062C\u0631\u0628 \u0635\u0648\u0631\u0629 \u0623\u0648\u0636\u062D');
   var raw;
-  try { raw = JSON.parse(text.slice(a, b + 1)); } catch (e) { throw new Error('مقدرتش أقرا الريسيت، جرب صورة أوضح'); }
-  if (raw.readable === false) throw new Error('الصورة دي مش واضح إنها ريسيت');
+  try { raw = JSON.parse(text.slice(a, b + 1)); } catch (e) { throw new Error('\u0645\u0642\u062F\u0631\u062A\u0634 \u0623\u0642\u0631\u0627 \u0627\u0644\u0631\u064A\u0633\u064A\u062A\u060C \u062C\u0631\u0628 \u0635\u0648\u0631\u0629 \u0623\u0648\u0636\u062D'); }
+  if (raw.readable === false) throw new Error('\u0627\u0644\u0635\u0648\u0631\u0629 \u062F\u064A \u0645\u0634 \u0648\u0627\u0636\u062D \u0625\u0646\u0647\u0627 \u0631\u064A\u0633\u064A\u062A');
   var valid = {};
   itemNames.forEach(function (n) { valid[norm_(n)] = n; });
   var lines = (raw.lines || []).map(function (l) {
@@ -665,23 +665,23 @@ function normalizeReceipt_(text, itemNames) {
     var m = l.match == null ? '' : valid[norm_(l.match)];
     return { name: norm_(l.name).slice(0, 80), qty: qty, lineTotal: Math.max(0, numAr_(l.lineTotal)), match: m || null };
   }).filter(function (l) { return l.name; });
-  if (!lines.length) throw new Error('مفيش أصناف ظاهرة في الريسيت');
+  if (!lines.length) throw new Error('\u0645\u0641\u064A\u0634 \u0623\u0635\u0646\u0627\u0641 \u0638\u0627\u0647\u0631\u0629 \u0641\u064A \u0627\u0644\u0631\u064A\u0633\u064A\u062A');
   return { lines: lines, fee: Math.max(0, numAr_(raw.deliveryFee)), total: raw.total == null ? null : numAr_(raw.total) };
 }
 
 function callClaudeReceipt_(b64, mime, itemNames) {
   var props = PropertiesService.getScriptProperties();
   var key = props.getProperty('ANTHROPIC_API_KEY');
-  if (!key) throw new Error('لازم تضيف ANTHROPIC_API_KEY في Script properties الأول');
+  if (!key) throw new Error('\u0644\u0627\u0632\u0645 \u062A\u0636\u064A\u0641 ANTHROPIC_API_KEY \u0641\u064A Script properties \u0627\u0644\u0623\u0648\u0644');
   var model = props.getProperty('CLAUDE_MODEL') || 'claude-sonnet-5-5';
   var prompt =
-    'دي صورة ريسيت (فاتورة) من مطعم أو سوبرماركت في مصر، ممكن تكون عربي أو إنجليزي.\n' +
-    'اقرا كل سطر مشتريات. وقارنه بقايمة الأصناف المطلوبة دي (JSON): ' + JSON.stringify(itemNames) + '\n' +
-    'رجّع JSON بس من غير أي كلام تاني بالشكل ده:\n' +
-    '{"readable":true,"lines":[{"name":"الاسم زي ما في الريسيت","qty":1,"lineTotal":0,"match":"اسم من القايمة بالظبط أو null"}],"deliveryFee":null,"total":null}\n' +
-    'قواعد: lineTotal هو إجمالي السطر كله (الكمية × سعر الوحدة) بالجنيه المصري. حوّل الأرقام العربية (٠-٩) لأرقام عادية. ' +
-    'لو الكمية مش مكتوبة اعتبرها 1. match لازم يكون واحد من أسماء القايمة حرفياً لو السطر ده نفس الصنف (حتى لو الاسم مختلف شوية مثل "فول زيت" = "فول بالزيت الحار")، وإلا null. ' +
-    'ماتخترعش أصناف. رسوم التوصيل/الخدمة في deliveryFee ومش في lines. total هو إجمالي الريسيت لو ظاهر. لو الصورة مش ريسيت خلي readable=false.';
+    '\u062F\u064A \u0635\u0648\u0631\u0629 \u0631\u064A\u0633\u064A\u062A (\u0641\u0627\u062A\u0648\u0631\u0629) \u0645\u0646 \u0645\u0637\u0639\u0645 \u0623\u0648 \u0633\u0648\u0628\u0631\u0645\u0627\u0631\u0643\u062A \u0641\u064A \u0645\u0635\u0631\u060C \u0645\u0645\u0643\u0646 \u062A\u0643\u0648\u0646 \u0639\u0631\u0628\u064A \u0623\u0648 \u0625\u0646\u062C\u0644\u064A\u0632\u064A.\n' +
+    '\u0627\u0642\u0631\u0627 \u0643\u0644 \u0633\u0637\u0631 \u0645\u0634\u062A\u0631\u064A\u0627\u062A. \u0648\u0642\u0627\u0631\u0646\u0647 \u0628\u0642\u0627\u064A\u0645\u0629 \u0627\u0644\u0623\u0635\u0646\u0627\u0641 \u0627\u0644\u0645\u0637\u0644\u0648\u0628\u0629 \u062F\u064A (JSON): ' + JSON.stringify(itemNames) + '\n' +
+    '\u0631\u062C\u0651\u0639 JSON \u0628\u0633 \u0645\u0646 \u063A\u064A\u0631 \u0623\u064A \u0643\u0644\u0627\u0645 \u062A\u0627\u0646\u064A \u0628\u0627\u0644\u0634\u0643\u0644 \u062F\u0647:\n' +
+    '{"readable":true,"lines":[{"name":"\u0627\u0644\u0627\u0633\u0645 \u0632\u064A \u0645\u0627 \u0641\u064A \u0627\u0644\u0631\u064A\u0633\u064A\u062A","qty":1,"lineTotal":0,"match":"\u0627\u0633\u0645 \u0645\u0646 \u0627\u0644\u0642\u0627\u064A\u0645\u0629 \u0628\u0627\u0644\u0638\u0628\u0637 \u0623\u0648 null"}],"deliveryFee":null,"total":null}\n' +
+    '\u0642\u0648\u0627\u0639\u062F: lineTotal \u0647\u0648 \u0625\u062C\u0645\u0627\u0644\u064A \u0627\u0644\u0633\u0637\u0631 \u0643\u0644\u0647 (\u0627\u0644\u0643\u0645\u064A\u0629 \u00D7 \u0633\u0639\u0631 \u0627\u0644\u0648\u062D\u062F\u0629) \u0628\u0627\u0644\u062C\u0646\u064A\u0647 \u0627\u0644\u0645\u0635\u0631\u064A. \u062D\u0648\u0651\u0644 \u0627\u0644\u0623\u0631\u0642\u0627\u0645 \u0627\u0644\u0639\u0631\u0628\u064A\u0629 (\u0660-\u0669) \u0644\u0623\u0631\u0642\u0627\u0645 \u0639\u0627\u062F\u064A\u0629. ' +
+    '\u0644\u0648 \u0627\u0644\u0643\u0645\u064A\u0629 \u0645\u0634 \u0645\u0643\u062A\u0648\u0628\u0629 \u0627\u0639\u062A\u0628\u0631\u0647\u0627 1. match \u0644\u0627\u0632\u0645 \u064A\u0643\u0648\u0646 \u0648\u0627\u062D\u062F \u0645\u0646 \u0623\u0633\u0645\u0627\u0621 \u0627\u0644\u0642\u0627\u064A\u0645\u0629 \u062D\u0631\u0641\u064A\u0627\u064B \u0644\u0648 \u0627\u0644\u0633\u0637\u0631 \u062F\u0647 \u0646\u0641\u0633 \u0627\u0644\u0635\u0646\u0641 (\u062D\u062A\u0649 \u0644\u0648 \u0627\u0644\u0627\u0633\u0645 \u0645\u062E\u062A\u0644\u0641 \u0634\u0648\u064A\u0629 \u0645\u062B\u0644 "\u0641\u0648\u0644 \u0632\u064A\u062A" = "\u0641\u0648\u0644 \u0628\u0627\u0644\u0632\u064A\u062A \u0627\u0644\u062D\u0627\u0631")\u060C \u0648\u0625\u0644\u0627 null. ' +
+    '\u0645\u0627\u062A\u062E\u062A\u0631\u0639\u0634 \u0623\u0635\u0646\u0627\u0641. \u0631\u0633\u0648\u0645 \u0627\u0644\u062A\u0648\u0635\u064A\u0644/\u0627\u0644\u062E\u062F\u0645\u0629 \u0641\u064A deliveryFee \u0648\u0645\u0634 \u0641\u064A lines. total \u0647\u0648 \u0625\u062C\u0645\u0627\u0644\u064A \u0627\u0644\u0631\u064A\u0633\u064A\u062A \u0644\u0648 \u0638\u0627\u0647\u0631. \u0644\u0648 \u0627\u0644\u0635\u0648\u0631\u0629 \u0645\u0634 \u0631\u064A\u0633\u064A\u062A \u062E\u0644\u064A readable=false.';
   var res = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
     method: 'post', contentType: 'application/json', muteHttpExceptions: true,
     headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01' },
@@ -696,14 +696,14 @@ function callClaudeReceipt_(b64, mime, itemNames) {
   var code = res.getResponseCode(), body = res.getContentText();
   if (code !== 200) {
     var msg = ''; try { msg = JSON.parse(body).error.message; } catch (e) {}
-    throw new Error('خطأ من خدمة قراءة الريسيت (' + code + ') ' + msg);
+    throw new Error('\u062E\u0637\u0623 \u0645\u0646 \u062E\u062F\u0645\u0629 \u0642\u0631\u0627\u0621\u0629 \u0627\u0644\u0631\u064A\u0633\u064A\u062A (' + code + ') ' + msg);
   }
   var out = JSON.parse(body), text = '';
   (out.content || []).forEach(function (c) { if (c.type === 'text') text += c.text; });
   return text;
 }
 
-// بيحسب سعر الوحدة الفعلي من كل ريسيتات الجولة ويحدّث الأوردر
+// \u0628\u064A\u062D\u0633\u0628 \u0633\u0639\u0631 \u0627\u0644\u0648\u062D\u062F\u0629 \u0627\u0644\u0641\u0639\u0644\u064A \u0645\u0646 \u0643\u0644 \u0631\u064A\u0633\u064A\u062A\u0627\u062A \u0627\u0644\u062C\u0648\u0644\u0629 \u0648\u064A\u062D\u062F\u0651\u062B \u0627\u0644\u0623\u0648\u0631\u062F\u0631
 function applyReceiptPrices_(order) {
   var agg = {}, fee = 0;
   read_('Receipts').filter(function (r) { return r.orderId === order.id; }).forEach(function (r) {
@@ -735,13 +735,13 @@ function applyReceiptPrices_(order) {
 function courierScanReceipt(pin, vendor, round, b64, mime) {
   checkPin_(pin);
   checkVendor_(vendor);
-  if (!b64 || b64.length > 7000000) throw new Error('الصورة كبيرة أوي أو فاضية');
+  if (!b64 || b64.length > 7000000) throw new Error('\u0627\u0644\u0635\u0648\u0631\u0629 \u0643\u0628\u064A\u0631\u0629 \u0623\u0648\u064A \u0623\u0648 \u0641\u0627\u0636\u064A\u0629');
   mime = ['image/jpeg', 'image/png', 'image/webp'].indexOf(mime) >= 0 ? mime : 'image/jpeg';
   var order = getOrCreateOrder_(vendor, round);
   var names = {};
   read_('Lines').forEach(function (l) { if (l.orderId === order.id && !isNa_(l)) names[norm_(l.item)] = true; });
   var itemNames = Object.keys(names);
-  if (!itemNames.length) throw new Error('مفيش طلبات في الجولة دي');
+  if (!itemNames.length) throw new Error('\u0645\u0641\u064A\u0634 \u0637\u0644\u0628\u0627\u062A \u0641\u064A \u0627\u0644\u062C\u0648\u0644\u0629 \u062F\u064A');
   var data = normalizeReceipt_(callClaudeReceipt_(b64, mime, itemNames), itemNames);
   return withLock_(function () {
     append_('Receipts', { id: newId_('r_'), orderId: order.id, createdAt: now_(), data: JSON.stringify(data) });
@@ -765,10 +765,10 @@ function courierSaveMenuItem(pin, item) {
   return withLock_(function () {
     checkVendor_(item.vendor);
     var name = norm_(item.name);
-    if (!name) throw new Error('اكتب اسم الصنف');
+    if (!name) throw new Error('\u0627\u0643\u062A\u0628 \u0627\u0633\u0645 \u0627\u0644\u0635\u0646\u0641');
     var rec = {
-      vendor: item.vendor, category: norm_(item.category) || 'أصناف', name: name,
-      price: Math.max(0, num_(item.price)), emoji: norm_(item.emoji) || '🍽️', active: 1,
+      vendor: item.vendor, category: norm_(item.category) || '\u0623\u0635\u0646\u0627\u0641', name: name,
+      price: Math.max(0, num_(item.price)), emoji: norm_(item.emoji) || '\uD83C\uDF7D\uFE0F', active: 1,
       desc: norm_(item.desc).slice(0, 80)
     };
     var cur = item.id ? read_('Menu').filter(function (m) { return m.id === item.id; })[0] : null;

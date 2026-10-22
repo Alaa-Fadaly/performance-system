@@ -32,3 +32,6 @@
 - اليوم بيتجدد لوحده.
 
 بعد أي تعديل في الكود لازم **Deploy ← Manage deployments ← New version**.
+
+## للمطوّر
+الملفات اللي بتنسخها في Apps Script (`index.html` و `Code.gs`) متولّدة بـ `python3 build.py` من `src/index.src.html` و `src/Code.src.gs`، وكلها ASCII بس (كل حرف عربي أو إيموجي بيتحوّل لـ `\uXXXX`) عشان أي محرر أو لصق مايبوّظش الحروف. عدّل في `src/` وبعدين شغّل `build.py`.
