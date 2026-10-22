@@ -209,6 +209,21 @@ details .inner{background:#fff;padding:0 14px 14px;border-radius:0 0 var(--r) va
 .badge-ok{display:inline-block;background:#D9F8EE;color:#07654f;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:800}
 .badge-miss{display:inline-block;background:#FFE0E8;color:#b0093a;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:800}
 </style>
+<script>
+/* لو حصل أي خطأ بيظهر على الصفحة بدل ما تفضل فاضية */
+(function(){
+  function show(msg){
+    try {
+      var d = document.createElement('div');
+      d.style.cssText = 'margin:16px;padding:14px;border-radius:16px;background:#FFE0E8;color:#7a0a2e;font:700 14px/1.5 sans-serif;direction:ltr;text-align:left;white-space:pre-wrap;word-break:break-word';
+      d.textContent = 'App error - ابعت الرسالة دي للمطوّر:\n' + msg;
+      (document.getElementById('app') || document.body).appendChild(d);
+    } catch (_) {}
+  }
+  window.addEventListener('error', function(e){ show((e.message || 'error') + '\nline ' + (e.lineno || '?') + ':' + (e.colno || '?')); });
+  window.addEventListener('unhandledrejection', function(e){ show('Promise: ' + ((e.reason && e.reason.message) || e.reason)); });
+})();
+</script>
 </head>
 <body>
 <header><div class="wrap">
@@ -219,7 +234,7 @@ details .inner{background:#fff;padding:0 14px 14px;border-radius:0 0 var(--r) va
   </div>
 </div></header>
 
-<main class="wrap" id="app"></main>
+<main class="wrap" id="app"><div style="text-align:center;padding:40px 10px;font-weight:800;color:#7C7399">ثواني بنجهز الفطار… 🥙</div></main>
 <div id="cartbar"></div>
 <nav id="nav"></nav>
 <div id="layer"></div>
