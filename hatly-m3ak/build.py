@@ -29,6 +29,27 @@ src = (here / 'src/index.src.html').read_text(encoding='utf-8')
 assert not re.search(r'\\[^\x00-\x7f]', src), 'backslash before non-ASCII'
 parts = re.split(r'(<script>.*?</script>)', src, flags=re.S)
 out = []
+def line_hashes(block):
+    inner = block[len('<script>'):-len('</script>')]
+    res = []
+    for ln in inner.split('\n'):
+        x = 5381
+        for ch in ln: x = (((x * 33) & 0xFFFFFFFF) ^ ord(ch)) & 0xFFFFFFFF
+        res.append(x)
+    return res
+built = [js_esc(p) if p.startswith('<script>') else html_esc(p) for p in parts]
+main = [b for b in built if b.startswith('<script>') and 'const VENDORS' in b][0]
+hashes = '[' + ','.join(map(str, line_hashes(main))) + ']'
+built = [b.replace('/*H*/[]', '/*H*/' + hashes) if '/*H*/[]' in b else b for b in built]
+for p in parts:
+    if False: pass
+    elif p.startswith('<script>'): pass
+    else:
+        for st in re.findall(r'<style>.*?</style>', p, flags=re.S):
+            assert all(ord(c) < 128 for c in st), 'non-ASCII inside <style>'
+(here / 'index.html').write_text(''.join(built), encoding='ascii')
+print('built: ASCII-only index.html + Code.gs')
+sys.exit(0)
 for p in parts:
     if p.startswith('<script>'): out.append(js_esc(p))
     else:

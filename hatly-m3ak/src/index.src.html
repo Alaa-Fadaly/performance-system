@@ -210,18 +210,36 @@ details .inner{background:#fff;padding:0 14px 14px;border-radius:0 0 var(--r) va
 .badge-miss{display:inline-block;background:#FFE0E8;color:#b0093a;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:800}
 </style>
 <script>
-/* لو حصل أي خطأ بيظهر على الصفحة بدل ما تفضل فاضية */
+/* لو حصل أي خطأ بيظهر على الصفحة بدل ما تفضل فاضية، ومعاه تقرير عن الكود اللي وصل فعلاً */
 (function(){
-  function show(msg){
+  function h(s){ var x = 5381; for (var i = 0; i < s.length; i++) x = (((x * 33) | 0) ^ s.charCodeAt(i)) >>> 0; return x; }
+  function report(e){
+    try {
+      var exp = /*H*/[], sc = document.scripts, t = null, i;
+      for (i = 0; i < sc.length; i++) if ((sc[i].text || '').indexOf('const VEN' + 'DORS') >= 0) { t = sc[i].text; break; }
+      if (t === null) return 'main script not found';
+      var ls = t.split('\n'), out = 'lines expected/got: ' + exp.length + '/' + ls.length;
+      for (i = 0; i < Math.min(exp.length, ls.length); i++) if (h(ls[i]) !== exp[i]) { out += '\nFIRST CHANGED LINE ' + (i + 1) + ':\n' + ls[i].slice(0, 160); break; }
+      if (i === Math.min(exp.length, ls.length)) out += '\nall common lines identical';
+      var ln = (e && e.lineno) || 0;
+      if (ln && ls[ln - 1] !== undefined) {
+        var L = ls[ln - 1], c = e.colno || 1, codes = [];
+        for (i = Math.max(0, c - 8); i < Math.min(L.length, c + 8); i++) codes.push(L.charCodeAt(i).toString(16));
+        out += '\nline ' + ln + ' (script-relative) col ' + c + ':\n' + L.slice(Math.max(0, c - 40), c + 40) + '\ncodes: ' + codes.join(' ');
+      }
+      return out;
+    } catch (err) { return 'report failed: ' + err.message; }
+  }
+  function show(msg, e){
     try {
       var d = document.createElement('div');
-      d.style.cssText = 'margin:16px;padding:14px;border-radius:16px;background:#FFE0E8;color:#7a0a2e;font:700 14px/1.5 sans-serif;direction:ltr;text-align:left;white-space:pre-wrap;word-break:break-word';
-      d.textContent = 'App error - ابعت الرسالة دي للمطوّر:\n' + msg;
+      d.style.cssText = 'margin:16px;padding:14px;border-radius:16px;background:#FFE0E8;color:#7a0a2e;font:700 13px/1.5 monospace;direction:ltr;text-align:left;white-space:pre-wrap;word-break:break-all';
+      d.textContent = 'App error - ابعت الرسالة دي للمطوّر:\n' + msg + '\n\n' + report(e);
       (document.getElementById('app') || document.body).appendChild(d);
     } catch (_) {}
   }
-  window.addEventListener('error', function(e){ show((e.message || 'error') + '\nline ' + (e.lineno || '?') + ':' + (e.colno || '?')); });
-  window.addEventListener('unhandledrejection', function(e){ show('Promise: ' + ((e.reason && e.reason.message) || e.reason)); });
+  window.addEventListener('error', function(e){ show((e.message || 'error') + '\nline ' + (e.lineno || '?') + ':' + (e.colno || '?'), e); });
+  window.addEventListener('unhandledrejection', function(e){ show('Promise: ' + ((e.reason && e.reason.message) || e.reason), null); });
 })();
 </script>
 </head>
