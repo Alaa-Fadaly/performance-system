@@ -215,7 +215,7 @@ details .inner{background:#fff;padding:0 14px 14px;border-radius:0 0 var(--r) va
   function h(s){ var x = 5381; for (var i = 0; i < s.length; i++) x = (((x * 33) | 0) ^ s.charCodeAt(i)) >>> 0; return x; }
   function report(e){
     try {
-      var exp = /*H*/[], sc = document.scripts, t = null, i;
+      var exp = __H__, sc = document.scripts, t = null, i;
       for (i = 0; i < sc.length; i++) if ((sc[i].text || '').indexOf('const VEN' + 'DORS') >= 0) { t = sc[i].text; break; }
       if (t === null) return 'main script not found';
       var ls = t.split('\n'), out = 'lines expected/got: ' + exp.length + '/' + ls.length;
@@ -287,8 +287,8 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 const fmt = n => (Math.round((Number(n)||0)*100)/100).toString() + ' ج';
 const normKey = s => String(s||'').trim().replace(/\s+/g,' ');
 const rounds = v => (S.orders[v] && S.orders[v].rounds) || [{ round:1, status:'open', fee:0, lines:[] }];
-const ord = v => { const r = rounds(v); return r[r.length - 1]; };              // الجولة الحالية (للموظفين)
-const cv = v => rounds(v).find(r => r.round === S.vr[v]) || ord(v);              // الجولة المعروضة للمسئول
+const ord = v => { const r = rounds(v); return r[r.length - 1]; };
+const cv = v => rounds(v).find(r => r.round === S.vr[v]) || ord(v);
 const pk = v => v + ':' + cv(v).round;
 const floorLabel = f => f < 0 ? 'البدروم' : f === 0 ? 'الأرضي' : 'دور ' + f;
 
@@ -296,7 +296,7 @@ function call(fn, ...args){
   return new Promise((ok, bad) => {
     if (!window.google || !google.script) return bad(new Error('مفيش اتصال بالسيرفر'));
     google.script.run.withSuccessHandler(ok)
-      .withFailureHandler(e => bad(new Error((e && e.message || String(e)).replace(/^Error:\s*/,'')))) [fn](...args);
+      .withFailureHandler(e => bad(new Error((e && e.message || String(e)).replace(new RegExp('^Error:\\s*'),'')))) [fn](...args);
   });
 }
 function toast(msg, err){
@@ -607,7 +607,7 @@ const waNum = ph => {
 function waLink(phone, name, item){
   const shop = S.vendor === 'foul' ? 'المطعم' : 'السوبرماركت';
   const msg = `أهلاً ${name} 👋\nأنا مسئول التوصيل في «هاتلى معاك» 🛵\nللأسف *${item}* مش موجود النهاردة في ${shop} 😕\nتحب أجيبلك حاجة تانية بداله ولا ألغيه؟ ردّ عليا 🙏`;
-  return `https://wa.me/${waNum(phone)}?text=${encodeURIComponent(msg)}`;
+  return `https:/` + `/wa.me/${waNum(phone)}?text=${encodeURIComponent(msg)}`;
 }
 function replaceSheet(ids, name, item){
   const names = S.menu.filter(m => m.vendor === S.vendor).map(m => m.name);
@@ -696,7 +696,7 @@ function receiptCard(v){
       <div class="end"><button class="x" data-act="delReceipt" data-id="${esc(r.id)}">✕</button></div></div>`).join('')}
     ${st.extra.length ? `<div class="sub" style="margin-top:8px;font-weight:700;color:#8a3f00">📎 في الريسيت حاجات مش في الأوردر: ${st.extra.map(l => esc(l.name)+' ('+fmt(l.lineTotal)+')').join('، ')}</div>` : ''}
     <label class="btn g full rbtn" style="margin-top:12px" id="scanLbl">📷 ارفع صورة ريسيت
-      <input type="file" id="rfile" accept="image/*" multiple></label></div>`;
+      <input type="file" id="rfile" accept="image/${'*'}" multiple></label></div>`;
   return html;
 }
 
@@ -719,7 +719,7 @@ async function scanFiles(files){
       const b64 = await fileToJpeg(f);
       const r = await courier('courierScanReceipt', v, rd, b64, 'image/jpeg');
       toast(`اتقرا ${r.lines} سطر وتحدّثت الأسعار ✅`);
-    } catch(e) { /* اتعرض */ }
+    } catch(e) { }
     await refresh(true);
     const typed = S.prices[pk(v)], st = receiptStats(v);
     if (typed) Object.keys(st.bought).forEach(k => delete typed[k]);
@@ -924,12 +924,12 @@ document.addEventListener('click', async e => {
       }
       case 'delMenu': if (confirm('تمسح الصنف ده من المنيو؟')) { await courier('courierDeleteMenuItem', d.id); await refresh(true); } break;
     }
-  } catch(err) { /* اتعرضت في run() */ }
+  } catch(err) { }
 });
 
 function onSearch(k){
   const el = $('#q_' + k), was = el.dataset.had === '1', has = !!S.q[k];
-  if (was !== has) { // الزرار/التصنيفات اتغيروا: ارسم الصفحة وارجع الفوكس
+  if (was !== has) {
     render(); const n = $('#q_' + k); if (n) { n.focus(); n.setSelectionRange(n.value.length, n.value.length); } return;
   }
   if (k === 'order') $('#grid').innerHTML = gridHtml();

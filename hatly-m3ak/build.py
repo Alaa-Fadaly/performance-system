@@ -37,10 +37,21 @@ def line_hashes(block):
         for ch in ln: x = (((x * 33) & 0xFFFFFFFF) ^ ord(ch)) & 0xFFFFFFFF
         res.append(x)
     return res
-built = [js_esc(p) if p.startswith('<script>') else html_esc(p) for p in parts]
+def strip_comments(block):
+    # بيشيل التعليقات اللي لوحدها في سطر (Apps Script بيشيل التعليقات بطريقة بدائية فممنوع يفضل // أو /* جوه الكود)
+    out = []
+    for ln in block.split('\n'):
+        if re.match(r'^\s*(//.*|/\*.*\*/)\s*$', ln): out.append('')
+        else: out.append(ln)
+    res = '\n'.join(out)
+    body = res[len('<script>'):-len('</script>')]
+    for bad in ('//', '/*', '*/'):
+        assert bad not in body, 'forbidden %r in script: %s' % (bad, body[max(0, body.index(bad)-60):body.index(bad)+60])
+    return res
+built = [js_esc(strip_comments(p)) if p.startswith('<script>') else html_esc(p) for p in parts]
 main = [b for b in built if b.startswith('<script>') and 'const VENDORS' in b][0]
 hashes = '[' + ','.join(map(str, line_hashes(main))) + ']'
-built = [b.replace('/*H*/[]', '/*H*/' + hashes) if '/*H*/[]' in b else b for b in built]
+built = [b.replace('__H__', hashes) if '__H__' in b else b for b in built]
 for p in parts:
     if False: pass
     elif p.startswith('<script>'): pass
