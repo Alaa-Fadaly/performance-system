@@ -178,6 +178,10 @@ summary::-webkit-details-marker{display:none}
 details[open] summary{border-radius:var(--r) var(--r) 0 0;box-shadow:none}
 details .inner{background:#fff;padding:0 14px 14px;border-radius:0 0 var(--r) var(--r);box-shadow:var(--shadow)}
 .hide{display:none!important}
+.search{position:relative;margin:4px 0 12px}
+.search input{padding:12px 42px;border-radius:999px;border:3px solid var(--ink);background:#fff;font-weight:700;box-shadow:var(--shadow)}
+.search .ic{position:absolute;inset-inline-start:14px;top:50%;transform:translateY(-50%);font-size:18px;pointer-events:none}
+.search .clr{position:absolute;inset-inline-end:8px;top:50%;transform:translateY(-50%);width:30px;height:30px;border-radius:50%;background:#FFE0E8;color:#b0093a;font-weight:900}
 .row.na{background:#FFF1F4;border-radius:14px;padding-inline:8px;margin:4px 0}
 .row.na .nm{text-decoration:line-through;color:#8a1c3c}
 .nabox{background:#FFF1F4;border:2px dashed #d6245a;border-radius:14px;padding:8px 10px;margin-top:8px}
@@ -236,7 +240,7 @@ const STATUS_TXT = {
 /* ======================= الحالة ======================= */
 const S = {
   me: load('hm_profile'), menu: [], orders: {}, tab: 'order', vendor: 'foul', cat: 'all',
-  cart: [], hist: [], vr: {}, cTab: 'orders', stats: { days: 30, data: null }, pin: sessionGet('hm_pin'), prices: {}, fee: {}, today: '', loaded: false, busy: false
+  cart: [], hist: [], q: { order: '', hist: '', courier: '' }, vr: {}, cTab: 'orders', stats: { days: 30, data: null }, pin: sessionGet('hm_pin'), prices: {}, fee: {}, today: '', loaded: false, busy: false
 };
 
 function load(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } }
@@ -324,25 +328,42 @@ function banner(v){
 /* ---------- اطلب ---------- */
 function cartQty(id){ return S.cart.filter(x => x.mid === id).reduce((a, c) => a + c.qty, 0); }
 
+/* ---------- البحث ---------- */
+const nz = s => String(s || '').toLowerCase().replace(/[\u064B-\u0652\u0640]/g, '').replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').replace(/\s+/g, ' ').trim();
+const matchQ = (q, ...fields) => { const t = nz(q); if (!t) return true; const hay = nz(fields.join(' ')); return t.split(' ').every(w => hay.includes(w)); };
+const searchBox = (k, ph) => `<div class="search"><span class="ic">🔍</span><input id="q_${k}" data-q="${k}" data-had="${S.q[k] ? 1 : 0}" type="search" value="${esc(S.q[k])}" placeholder="${ph}" autocomplete="off" enterkeyhint="search">${S.q[k] ? `<button class="clr" data-act="qclear" data-q="${k}">✕</button>` : ''}</div>`;
+
+function gridHtml(){
+  const v = S.vendor, q = S.q.order, items = S.menu.filter(m => m.vendor === v);
+  const closed = ord(v).status !== 'open';
+  const shown = q ? items.filter(m => matchQ(q, m.name, m.desc, m.category, dispName(m.name, m.category))) : items.filter(m => S.cat === 'all' || m.category === S.cat);
+  let html = '';
+  if (q && !shown.length) {
+    const other = Object.keys(VENDORS).filter(k => k !== v && S.menu.some(m => m.vendor === k && matchQ(q, m.name, m.desc, m.category)));
+    html += `<div class="card" style="text-align:center"><div style="font-size:42px">🤷</div><div class="nm" style="font-size:16px">مفيش «${esc(q)}» في منيو ${VENDORS[v].short}</div>
+      <div class="btns" style="justify-content:center">${other.map(k => `<button class="btn sm y" data-act="vendor" data-v="${k}">${VENDORS[k].emoji} شوفه في ${VENDORS[k].short}</button>`).join('')}
+      <button class="btn sm" data-act="custom" data-name="${esc(q)}">✍️ اطلبه كصنف تاني</button></div></div>`;
+    return html;
+  }
+  html += `<div class="grid ${closed?'disabled':''}">` + shown.map((m,i) => {
+    const n = cartQty(m.id);
+    return `<div class="item ${n?'has':''}">
+      <div class="bub" style="background:${BUBBLES[i%BUBBLES.length]}">${esc(m.emoji)}</div>
+      <h3>${esc(m.name)}</h3>${m.desc?`<div class="desc">${esc(m.desc)}</div>`:''}<div class="price">${fmt(m.price)}</div>
+      <div class="step"><button class="m" data-act="dec" data-id="${esc(m.id)}">−</button><span>${n}</span><button data-act="inc" data-id="${esc(m.id)}">+</button></div>
+    </div>`;
+  }).join('') + `<button class="item custom" data-act="custom"><div class="bub">✍️</div>صنف تاني مش في القايمة</button></div>`;
+  return html;
+}
+
 function viewOrder(){
   const v = S.vendor, items = S.menu.filter(m => m.vendor === v);
   const cats = [...new Set(items.map(m => m.category))];
   if (S.cat !== 'all' && !cats.includes(S.cat)) S.cat = 'all';
-  const shown = items.filter(m => S.cat === 'all' || m.category === S.cat);
-  const closed = ord(v).status !== 'open';
-  return vendorChips() + banner(v) + suggestion() +
-    `<div class="cats"><button class="cat ${S.cat==='all'?'on':''}" data-act="cat" data-v="all">الكل</button>` +
-    cats.map(c => `<button class="cat ${S.cat===c?'on':''}" data-act="cat" data-v="${esc(c)}">${esc(c)}</button>`).join('') + '</div>' +
-    `<div class="grid ${closed?'disabled':''}">` +
-    shown.map((m,i) => {
-      const q = cartQty(m.id);
-      return `<div class="item ${q?'has':''}">
-        <div class="bub" style="background:${BUBBLES[i%BUBBLES.length]}">${esc(m.emoji)}</div>
-        <h3>${esc(m.name)}</h3>${m.desc?`<div class="desc">${esc(m.desc)}</div>`:''}<div class="price">${fmt(m.price)}</div>
-        <div class="step"><button class="m" data-act="dec" data-id="${esc(m.id)}">−</button><span>${q}</span><button data-act="inc" data-id="${esc(m.id)}">+</button></div>
-      </div>`;
-    }).join('') +
-    `<button class="item custom" data-act="custom"><div class="bub">✍️</div>صنف تاني مش في القايمة</button></div>`;
+  return vendorChips() + banner(v) + suggestion() + searchBox('order', 'دوّر على صنف… (فول، طعمية، كليوباترا)') +
+    (S.q.order ? '' : `<div class="cats"><button class="cat ${S.cat==='all'?'on':''}" data-act="cat" data-v="all">الكل</button>` +
+    cats.map(c => `<button class="cat ${S.cat===c?'on':''}" data-act="cat" data-v="${esc(c)}">${esc(c)}</button>`).join('') + '</div>') +
+    `<div id="grid">${gridHtml()}</div>`;
 }
 
 /* ---------- اقتراح اليوم + السجل ---------- */
@@ -382,18 +403,24 @@ function reorder(h){
   render(); reviewSheet();
 }
 
-function viewHist(){
-  const month = S.today.slice(0, 7), mt = S.hist.filter(h => h.date.slice(0, 7) === month).reduce((a, h) => a + h.total, 0);
-  let html = `<div class="card" style="margin-top:16px;background:linear-gradient(135deg,#E6E0FF,#CFF5EA)"><h2>📜 سجلّ مشترياتي</h2>
-    <div class="total" style="margin-top:0"><span>الشهر ده صرفت</span><span>${fmt(mt)}</span></div></div>`;
-  if (!S.me) return html + '<div class="empty"><span class="e">🙋</span>سجّل بياناتك الأول</div>';
-  if (!S.hist.length) return html + '<div class="empty"><span class="e">🍽️</span>لسه مفيش طلبات في السجل</div>';
-  return html + S.hist.map((h, i) => `<div class="card"><h2>${VENDORS[h.vendor] ? VENDORS[h.vendor].emoji : '🛍️'} ${dayLabel(h.date)}${S.hist.filter(x => x.date === h.date && x.vendor === h.vendor).length > 1 ? ' · جولة ' + h.round : ''}
+function histHtml(){
+  const q = S.q.hist;
+  const rows = S.hist.map((h, i) => ({ h, i })).filter(({ h }) => !q || h.items.some(it => matchQ(q, it.item, dispName(it.item, it.cat), it.note, h.date)));
+  if (!rows.length) return `<div class="empty"><span class="e">${q ? '🤷' : '🍽️'}</span>${q ? 'مفيش نتيجة' : 'لسه مفيش طلبات في السجل'}</div>`;
+  return rows.map(({ h, i }) => `<div class="card"><h2>${VENDORS[h.vendor] ? VENDORS[h.vendor].emoji : '🛍️'} ${dayLabel(h.date)}${S.hist.filter(x => x.date === h.date && x.vendor === h.vendor).length > 1 ? ' · جولة ' + h.round : ''}
       <span class="cnt" style="background:#E6E0FF">${h.date}</span></h2>
     ${h.items.map(it => `<div class="row"><div class="qty">${it.qty}</div><div><div class="nm">${esc(dispName(it.item, it.cat))}</div>${it.bread ? `<div class="sub">${breadTxt(it.bread)}</div>` : ''}${it.note ? `<div class="sub">📝 ${esc(it.note)}</div>` : ''}</div>
       <div class="end">${fmt(it.qty * it.price)}</div></div>`).join('')}
     <div class="total"><span>الإجمالي</span><span>${fmt(h.total)}</span></div>
     ${h.date < S.today ? `<div class="btns"><button class="btn y full" data-act="reorder" data-i="${i}">🔁 اطلبه تاني</button></div>` : ''}</div>`).join('');
+}
+
+function viewHist(){
+  const month = S.today.slice(0, 7), mt = S.hist.filter(h => h.date.slice(0, 7) === month).reduce((a, h) => a + h.total, 0);
+  const head = `<div class="card" style="margin-top:16px;background:linear-gradient(135deg,#E6E0FF,#CFF5EA)"><h2>📜 سجلّ مشترياتي</h2>
+    <div class="total" style="margin-top:0"><span>الشهر ده صرفت</span><span>${fmt(mt)}</span></div></div>`;
+  if (!S.me) return head + '<div class="empty"><span class="e">🙋</span>سجّل بياناتك الأول</div>';
+  return head + searchBox('hist', 'دوّر في سجلّك… (صنف أو تاريخ)') + `<div id="hlist">${histHtml()}</div>`;
 }
 
 function renderCartBar(){
@@ -491,11 +518,7 @@ function viewCourier(){
 
   html += `<div class="card"><h2>📋 اللي هتطلبه <span class="cnt">${items.reduce((a,g)=>a+g.qty,0)}</span>
     ${hasLive?`<button class="btn sm y" style="margin-inline-start:6px" data-act="copyList">نسخ</button>`:''}</h2>`;
-  if (!items.length) html += `<div class="empty"><span class="e">🦗</span>لسه مفيش طلبات</div>`;
-  else html += [['sand','🥙 سندوتشات','#FFE9A8'],['other','🍽️ أطباق وطلبات تانية','#D6E4FF']].map(([k,t,c]) => {
-    const gs = items.filter(g => kindOf(g) === k); if (!gs.length) return '';
-    return `<div class="kind" style="background:${c}">${t}<span>${gs.reduce((a,g)=>a+g.qty,0)}</span></div>` + gs.map(g => itemRow(g)).join('');
-  }).join('');
+  html += searchBox('courier', 'دوّر باسم صنف أو موظف أو مكتب…') + `<div id="clist">${courierListHtml()}</div>`;
   html += '</div>';
 
   if (hasLive) {
@@ -514,6 +537,17 @@ function viewCourier(){
   html += `<details><summary>🍽️ إدارة المنيو</summary><div class="inner">${menuAdmin(v)}</div></details>
     <div class="btns" style="justify-content:center"><button class="btn o sm" data-act="logout">خروج من منطقة مسئول التوصيل</button></div>`;
   return html;
+}
+
+function courierListHtml(){
+  const o = cv(S.vendor), q = S.q.courier;
+  let items = groupByItem(o.lines);
+  if (q) items = items.filter(g => matchQ(q, g.item, dispName(g.item, g.cat), g.cat, g.people.map(p => `${p.name} ${p.office} ${floorLabel(p.floor)}`).join(' ')));
+  if (!items.length) return `<div class="empty"><span class="e">${q ? '🤷' : '🦗'}</span>${q ? 'مفيش نتيجة' : 'لسه مفيش طلبات'}</div>`;
+  return [['sand','🥙 سندوتشات','#FFE9A8'],['other','🍽️ أطباق وطلبات تانية','#D6E4FF']].map(([k,t,c]) => {
+    const gs = items.filter(g => kindOf(g) === k); if (!gs.length) return '';
+    return `<div class="kind" style="background:${c}">${t}<span>${gs.reduce((a,g)=>a+g.qty,0)}</span></div>` + gs.map(g => itemRow(g)).join('');
+  }).join('');
 }
 
 function itemRow(g){
@@ -755,10 +789,10 @@ function reviewSheet(){
     <div class="btns"><button class="btn g full" data-act="submit">✅ ابعت للأوردر المجمع</button></div>`);
 }
 
-function customSheet(){
+function customSheet(pre){
   if (needProfile()) return;
   openSheet(`<h2>✍️ صنف تاني</h2><p class="hint">اكتب أي حاجة عايزها من ${VENDORS[S.vendor].short}</p>
-    <label>اسم الصنف</label><input id="c_name" maxlength="60" placeholder="مثلاً: سندوتش حلاوة">
+    <label>اسم الصنف</label><input id="c_name" maxlength="60" value="${esc(pre || '')}" placeholder="مثلاً: سندوتش حلاوة">
     <div class="two"><div><label>الكمية</label><input id="c_qty" type="number" min="1" max="50" value="1"></div>
     <div><label>السعر التقريبي (اختياري)</label><input id="c_price" type="number" min="0" step="0.5" placeholder="0"></div></div>
     <label>ملاحظة</label><input id="c_note" maxlength="100">
@@ -798,7 +832,8 @@ document.addEventListener('click', async e => {
         await run(call('registerUser', p));
         S.me = p; store('hm_profile', p); closeSheet(); toast('أهلاً يا ' + p.name + ' 🎉'); refresh(true); break;
       }
-      case 'custom': customSheet(); break;
+      case 'custom': customSheet(d.name); break;
+      case 'qclear': S.q[d.q] = ''; render(); break;
       case 'reorder': reorder(S.hist[+d.i]); break;
       case 'skipSuggest': store('hm_skip', S.today + S.vendor); render(); break;
       case 'addCustom': {
@@ -859,8 +894,18 @@ document.addEventListener('click', async e => {
   } catch(err) { /* اتعرضت في run() */ }
 });
 
+function onSearch(k){
+  const el = $('#q_' + k), was = el.dataset.had === '1', has = !!S.q[k];
+  if (was !== has) { // الزرار/التصنيفات اتغيروا: ارسم الصفحة وارجع الفوكس
+    render(); const n = $('#q_' + k); if (n) { n.focus(); n.setSelectionRange(n.value.length, n.value.length); } return;
+  }
+  if (k === 'order') $('#grid').innerHTML = gridHtml();
+  else if (k === 'hist') $('#hlist').innerHTML = histHtml();
+  else $('#clist').innerHTML = courierListHtml();
+}
 document.addEventListener('input', e => {
   const t = e.target;
+  if (t.dataset.q) { S.q[t.dataset.q] = t.value; onSearch(t.dataset.q); return; }
   if (t.dataset.price !== undefined) { (S.prices[pk(S.vendor)] = S.prices[pk(S.vendor)] || {})[t.dataset.price] = t.value; liveBills(); }
   else if (t.id === 'fee') { S.fee[pk(S.vendor)] = t.value; liveBills(); }
   else if (t.dataset.note !== undefined) S.cart[t.dataset.note].note = t.value;
